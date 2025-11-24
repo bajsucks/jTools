@@ -1,0 +1,10 @@
+[package]
+name = "baj/jtools"
+description = "A collection of tools made to ease Roblox development"
+version = "0.1.0"
+license = "Apache-2.0"
+authors = ["baj"]
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dev-dependencies]

@@ -1,0 +1,9 @@
+{
+  "name": "jTools",
+  "tree": {
+    "$path": "src",
+    "Lootbag": {
+      "$path": "src/Lootbag/src"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+[submodule "src/Lootbag"]
+	path = src/Lootbag
+	url = https://github.com/Meowtsun/Lootbag.git
