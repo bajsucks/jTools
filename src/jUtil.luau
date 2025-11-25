@@ -305,6 +305,19 @@ end
 function Util.PlayerList(state)
 	game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, state)
 end
+--[[
+Returns player's friends on this server.
+If PlayerList is provided, will search that list instead.
+]]
+function Util.GetFriendsOnServer(Player:Player, PlayerList:{Player}?)
+	local result = {}
+	for _, p in (PlayerList and PlayerList or Players:GetPlayers()) do
+		if Player:IsFriendsWith(p.UserId) then
+			table.insert(result, p)
+		end
+	end
+	return result
+end
 
 function Util.GradientBar(gradient, intersects)
 	--table.sort(intersects, function(a, b) return a.Intersect < b.Intersect end)
