@@ -114,7 +114,7 @@ function Util.Debris(Inst:Instance|{Instance}, t:number)
             Inst:Destroy()
         end)
 	else
-		error("Invalid instance provided for Debris!")
+		error("Invalid instance provided for Debris!", 2)
 	end
 end
 
@@ -148,7 +148,7 @@ function Util.Preload(List: {string})
 		ContentProvider:PreloadAsync(List)
 	end)
 	if not t then 
-        error(err)
+        error(err, 2)
     end
 end
 
@@ -161,9 +161,9 @@ local function scaleToPivot(pivotPos, partPos, scaleFactor)
 	)
 end
 
-function Util.PivotScale(inst: BasePart, scale)
-	if not inst:IsA("BasePart") then
-        error("Incorrect arguments passed!")
+function Util.PivotScale(inst: BasePart, scale: number)
+	if not inst:IsA("BasePart") or not scale then
+        error("Incorrect arguments passed!", 2)
     end
 	local pivotPos = inst:GetPivot().Position
 
@@ -222,28 +222,31 @@ end
 
 
 function Util.WaitForChildWhichIsA(instance:Instance, types:{string}, timeout:number?)
+	local function IsType(a)
+		for _, t in types do
+			if a:IsA(t) then
+				return true
+			end
+		end
+		return false
+	end
 	timeout = timeout or 10
 	local currentTimeout = 0
 	local child
 	instance.ChildAdded:Connect(function(c)
-		for _, t in types do
-			if c:IsA(t) then
-                child = c
-                return c
-            end
-		end -- I have no mouth and I must scream
+		if IsType(c) then
+			child = c
+		end
 	end)
 	for _, v in instance:GetChildren() do
-		for _, t in types do
-			if v:IsA(t) then return v end
-		end
+		if IsType(v) then return v end
 	end
 	repeat
-        local a = task.wait()
-        currentTimeout += a
+        local delta = task.wait()
+        currentTimeout += delta
     until child or currentTimeout > timeout
 	if currentTimeout > timeout then
-        error("infinite yield!")
+        error(`infinite yield possible on :WaitForChildWhichIsA({types})!`, 2)
     end
 	return child
 end
