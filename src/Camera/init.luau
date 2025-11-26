@@ -7,6 +7,8 @@ local RunService = game:GetService("RunService")
 if RunService:IsServer() then
     return {}
 end
+local Signal = require(script.Parent.SignalPlus)
+local Janitor = require(script.Parent.Janitor)
 local Lighting = game:GetService("Lighting")
 local Player = game.Players.LocalPlayer
 local te = require(script.TimedEffects)
@@ -14,10 +16,10 @@ local grad = te.new()
 local DOF = te.new()
 
 --[[
-Blur the camera for t seconds
-tr1 - tween time beginning
-tr2 - tween time ending
-val - blur power
+	Blur the camera for t seconds
+	tr1 - tween time beginning
+	tr2 - tween time ending
+	val - blur power
 ]]
 function Cam.Blur(t:number?, tr1:number, tr2:number, val:number)
     assert(val, "No blur value provided!")
@@ -38,11 +40,11 @@ function Cam.Blur(t:number?, tr1:number, tr2:number, val:number)
 	end)
 end
 --[[
-Blur the camera permanently
-tr1 - tween time beginning
-tr2 - tween time ending
-val - blur power
-returns function that removes the blur when called
+	Blur the camera permanently
+	tr1 - tween time beginning
+	tr2 - tween time ending
+	val - blur power
+	returns function that removes the blur when called
 ]]
 function Cam._BlurPerm(tr1:number, tr2:number, val:number)
     assert(val, "No blur value provided!")
@@ -64,9 +66,9 @@ function Cam._BlurPerm(tr1:number, tr2:number, val:number)
 	end
 end
 --[[
-clear all camera blurs with the specified tr2
-not having tr2 should be a thing, but
-I have no finished it yet apparently
+	clear all camera blurs with the specified tr2
+	not having tr2 should be a thing, but
+	I have no finished it yet apparently
 ]]
 function Cam.ClearBlur(tr2:number?)
 	if not tr2 then
@@ -95,6 +97,118 @@ end
 function Cam.NewDOF()
 	local uuid = DOF:Add()
 	return DOF, uuid
+end
+
+local Cutscene = {}
+Cutscene.__index = Cutscene
+--[[
+	!!EXPERIMENTAL!!
+
+	Creates a new cutscene.
+	FocusPoint- Where the camera will be pointed to during the cutscene.
+	If nil, camera will face the same direction as points.
+]]
+function Cam.Cutscene(FocusPoint:Vector3?)
+	local self = {}
+	self.Points = {}
+	self.FocusPoint = FocusPoint
+	self.FocusPointChanged = Signal()
+	self.Playing = false
+	self.Began = Signal()
+	self.Ended = Signal()
+	self.Cancelled = Signal()
+	self._CutsceneCancelled = Signal()
+	setmetatable(self, Cutscene)
+	return self
+end
+--[[
+	!!EXPERIMENTAL!!
+
+	Plays a cutscene.
+]]
+function Cutscene.Play(self:Cutscene)
+	task.spawn(function()
+
+		if self.Playing then
+			self:Cancel()
+		end
+		local j = Janitor.new()
+
+		self.Began:Fire()
+		local c:Camera = Player.CurrentCamera
+		self.SavedCameraType = c.CameraType
+		self.Playing = true
+		c.CameraType = Enum.CameraType.Scriptable
+		local _Cancelled = false
+		local cfv = Instance.new("CFrameValue")
+		j:Add(cfv, "Destroy")
+		cfv.Value = c.CFrame
+		j:Add(RunService.RenderStepped:Connect(function()
+			local pos = cfv.Value.Position
+			if self.FocusPoint then
+				c.CFrame = CFrame.lookAt(pos, self.FocusPoint)
+			else
+				c.CFrame = cfv.Value
+			end
+		end))
+		j:Add(self._CutsceneCancelled:Once(function()
+			_Cancelled = true
+		end), "Disconnect")
+		for i, v in ipairs(self.Points) do
+			if _Cancelled then break end
+			if i >= #self.Points then break end
+			local nextv = self.Points[i+1]
+			local curcf: CFrame, Duration: number, SkipTween: boolean = table.unpack(v)
+			local info = TweenInfo.new(Duration, Enum.EasingStyle.Linear)
+			local nextcf: CFrame = nextv[1]
+			if i == 1 then
+				cfv.Value = curcf
+			end
+			if SkipTween then
+				cfv.Value = nextcf
+				continue
+			end
+			local Tween = TweenService:Create(cfv, info, {Value = nextcf})
+			Tween:Play()
+			j:Add(Tween, "Cancel")
+			repeat
+				task.wait()
+			until Tween.Completed or _Cancelled
+		end
+		if not _Cancelled then
+			self.Ended:Fire()
+		end
+		j:Destroy()
+		self.Playing = false
+		c.CameraType = self.SavedCameraType
+
+	end)
+end
+--[[
+	Cancels a cutscene.
+]]
+function Cutscene.Cancel(self:Cutscene)
+	if not self.Playing then return end
+	self._CutsceneCancelled:Fire()
+	self.Cancelled:Fire()
+end
+--[[
+	Adds a new point to the cutscene.
+	SkipNext - Whether to skip the tween to next point
+	Speed - In seconds, how long it takes for the camera to go from
+	point A to point B
+]]
+function Cutscene.AddPoint(self:Cutscene, CFrame:CFrame, Duration:number, SkipTween:boolean?)
+	assert(Duration > 0, "Cutscene point duration must be >0!")
+	assert(CFrame, "Tried to create a point without CFrame!")
+	table.insert(self.Points, {CFrame, Duration, SkipTween})
+end
+--[[
+	Change the focus point of the cutscene.
+]]
+function Cutscene.ChangeFocusPoint(self:Cutscene, FocusPoint:CFrame?)
+	self.FocusPoint = FocusPoint
+	self.FocusPointChanged:Fire()
 end
 
 RunService.Heartbeat:Connect(function()
@@ -136,5 +250,7 @@ RunService.RenderStepped:Connect(function()
 		Lighting.DepthOfField.FocusDistance = math.min(DefaultDOF + total, 1)
 	end
 end)
+
+export type Cutscene = typeof(Cam.Cutscene())
 
 return Cam
