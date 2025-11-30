@@ -1,15 +1,24 @@
 local Util = {}
 local ContentProvider = game:GetService("ContentProvider")
+local RunService = game:GetService('RunService')
 local Players = game:GetService("Players")
+local Janitor = require(script.Parent.Janitor)
+
+-- Object:IsA() but supports a table of types
+function Util.IsA(Obj:Object, Type:{string})
+	for _, t in Type do
+		if Obj:IsA(t) then
+			return true
+		end
+	end
+	return false
+end
 
 function Util.GetChildrenWhichAre(Inst:Instance, Type:{string}) : {Instance} | {}
 	local res = {}
 	for _, v in Inst:GetChildren() do
-		for _, t in Type do
-			if v:IsA(t) then
-				table.insert(res, v)
-				continue
-			end
+		if Util.IsA(v, Type) then
+			table.insert(res, v)
 		end
 	end
 	return res
@@ -17,24 +26,15 @@ end
 
 function Util.ClearChildrenWhichAre(Inst:Instance, Type:{string})
 	for _, v in Inst:GetChildren() do
-		for _, t in Type do
-			if v:IsA(t) then
-                v:Destroy()
-            end
+		if Util.IsA(v, Type) then
+			v:Destroy()
 		end
 	end
 end
 
 function Util.ClearChildrenExcept(Inst:Instance, Type:{string})
 	for _, v in Inst:GetChildren() do
-		local keep = false
-		for _, t in Type do
-			if v:IsA(t) then
-                keep = true
-                break
-            end
-		end
-		if not keep then
+		if not Util.IsA(v, Type) then
             v:Destroy()
         end
 	end
@@ -42,14 +42,7 @@ end
 
 function Util.ClearDescendantsWhichAre(Inst:Instance, Type:{string})
 	for _, v in Inst:GetDescendants() do
-		local remove = false
-		for _, t in Type do
-			if v:IsA(t) then
-                remove = true
-                break
-            end
-		end
-		if remove then
+		if Util.IsA(v, Type) then
             v:Destroy()
         end
 	end
@@ -57,13 +50,7 @@ end
 
 function Util.ClearDescendantsExcept(Inst:Instance, Type:{string})
 	for _, v in Inst:GetDescendants() do
-		local keep = false
-		for _, t in Type do
-			if v:IsA(t) then
-                keep = true
-            end
-		end
-		if not keep then
+		if not Util.IsA(v, Type) then
             v:Destroy()
         end
 	end
@@ -80,6 +67,13 @@ function Util.GetDescendantsWhichAre(Inst:Instance, Type:{string}) : {Instance} 
 		end
 	end
 	return res
+end
+
+function Util.DictHasValue(dict, value)
+	for _, v in dict do
+		if v == value then return true end
+	end
+	return false
 end
 
 -- supports max of ~1e66-1e68
@@ -122,7 +116,6 @@ function Util.ClientDisableReset()
 	local coreCall do
 		local MAX_RETRIES = 8
 		local StarterGui = game:GetService('StarterGui')
-		local RunService = game:GetService('RunService')
 
 		function coreCall(method, ...)
 			local result = {}
@@ -200,7 +193,10 @@ function Util.IsTableEmpty(dict:{[any]: any}): boolean
 	return true
 end
 
-function Util.deepClone(original)
+function Util.deepClone(original: {})
+	if typeof(original) ~= "table" then
+		error("Can only deep clone tables!", 2)
+	end
 	local clone = table.clone(original) 
 	for key, value in original do
 		if type(value) == "table" then
@@ -210,49 +206,37 @@ function Util.deepClone(original)
 	return clone
 end
 
-function Util.HasMouse()
-	local UserInputService = game:GetService("UserInputService")
-	return UserInputService.MouseEnabled
-end
 
-function Util.GetPreferredInput()
-	local UserInputService = game:GetService("UserInputService")
-	return	UserInputService.PreferredInput
-end
-
-
-function Util.WaitForChildWhichIsA(instance:Instance, types:{string}, timeout:number?)
-	local function IsType(a)
-		for _, t in types do
-			if a:IsA(t) then
-				return true
-			end
-		end
-		return false
-	end
+function Util.WaitForChildWhichIsA(instance:Instance, Types:{string}, timeout:number?)
 	timeout = timeout or 10
 	local currentTimeout = 0
 	local child
-	instance.ChildAdded:Connect(function(c)
-		if IsType(c) then
+
+	for _, v in instance:GetChildren() do
+		if Util.IsA(v, Types) then return v end
+	end
+
+	local j = Janitor.new()
+	j:Add(instance.ChildAdded:Connect(function(c)
+		if Util.IsA(c, Types) then
 			child = c
 		end
-	end)
-	for _, v in instance:GetChildren() do
-		if IsType(v) then return v end
-	end
+	end), "Disconnect")
+
 	repeat
         local delta = task.wait()
         currentTimeout += delta
     until child or currentTimeout > timeout
+
 	if currentTimeout > timeout then
-        error(`infinite yield possible on :WaitForChildWhichIsA({types})!`, 2)
+        error(`infinite yield possible on :WaitForChildWhichIsA({Types})!`, 2)
     end
+
+	j:Destroy()
 	return child
 end
 function Util.PromptAddGameToFavorites()
 	local AvatarEditorService = game:GetService("AvatarEditorService")
-	
 	AvatarEditorService:PromptSetFavorite(game.PlaceId, Enum.AvatarItemType.Asset, true)
 end
 do
@@ -287,7 +271,6 @@ do
 	end
 end
 
-local RunService = game:GetService("RunService")
 if RunService:IsClient() then
 	function Util.ChangeControls(state)
 		local LocalPlayer = Players.LocalPlayer
@@ -298,6 +281,20 @@ if RunService:IsClient() then
 			Controls:Disable()
 		end
 	end
+
+	function Util.HasMouse()
+		local UserInputService = game:GetService("UserInputService")
+		return UserInputService.MouseEnabled
+	end
+
+	function Util.GetPreferredInput()
+		local UserInputService = game:GetService("UserInputService")
+		return UserInputService.PreferredInput
+	end
+
+	function Util.PlayerList(state)
+		game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, state)
+	end
 end
 
 -- boarding funnel wrapper (player, step, stepname)
@@ -305,9 +302,6 @@ end
 --	AnalyticsService:LogOnboardingFunnelStepEvent(player, step, stepname)
 --end
 
-function Util.PlayerList(state)
-	game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, state)
-end
 --[[
 Returns player's friends on this server.
 If PlayerList is provided, will search that list instead.
@@ -345,19 +339,11 @@ function Util.GradientBar(gradient, intersects)
 	gradient.Color = ColorSequence.new(sequence)
 end
 
-function Util.DictHasValue(dict, value)
-	for _, v in dict do
-		if v == value then return true end
-	end
-	return false
-end
-
 function Util.TweenPivotTo(PV:PVInstance, info:TweenInfo, targetcf:CFrame)
 	local TweenService = game:GetService("TweenService")
 	
 	if not PV:IsA("PVInstance") or typeof(info) ~= "TweenInfo" or typeof(targetcf) ~= "CFrame" then
-        warn("Invalid arguments provided for TweenModelCF!", typeof(PV), typeof(info), typeof(targetcf))
-        return
+        error(`Invalid arguments provided for TweenModelCF! Types provided: {typeof(PV)}, {typeof(info)}, {typeof(targetcf)}`, 2)
     end
 	
 	task.spawn(function()
@@ -371,7 +357,6 @@ function Util.TweenPivotTo(PV:PVInstance, info:TweenInfo, targetcf:CFrame)
 		tw.Completed:Wait()
 		con:Disconnect()
 	end)
-	
 end
 
 function Util.BulkPivotTo(models:{PVInstance}, CFrames:{CFrame}, mode:Enum.BulkMoveMode)
