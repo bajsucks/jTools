@@ -3,7 +3,7 @@
   "tree": {
     "$path": "src",
     "Lootbag": {
-      "$path": "src/Lootbag/src"
+      "$path": "Submodules/Lootbag/src"
     }
   }
 }
