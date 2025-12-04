@@ -6,6 +6,14 @@ function Math.lerp(start:number, goal:number, alpha:number) : number
 	return start + (goal - start) * alpha
 end
 
+function Math.inverseLerp(start:number, goal:number, output:number) : number
+    local delta = goal - start
+    if delta == 0 then
+        return 0
+    end
+    return (output - start) / delta
+end
+
 function Math.MinLerp(start:number, goal:number, alpha:number, lastnum:number, min:number) : number
 	local result = start + (goal - start) * alpha
 	return if result - lastnum >= min then result else goal
