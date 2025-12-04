@@ -93,6 +93,21 @@ function Util.Abr(Num: number): string
 	return formattedNum..(suffixes)[i + 1]
 end
 
+--[[
+	Modulo wrapper. Wraps the number around itself if Num > Max.
+	(12, 10) -> 2
+	(8, 10) -> 8
+	(10, 10) -> 10
+]]
+function Util.WrapNumber(Num: number, Max:number)
+    local rem = Num % Max
+    if rem == 0 then
+        return Max
+    else
+        return rem
+    end
+end
+
 function Util.Debris(Inst:Instance|{Instance}, t:number)
 	if typeof(t) ~= "number" then
         t = 0
