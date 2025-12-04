@@ -11,10 +11,11 @@ Grid.__index = Grid
 --[[
     Creates a new grid.
 ]]
-function GridUtil.new(root:CFrame, cellSize:Vector3)
+function GridUtil.new(root:CFrame, cellSize:Vector3, gridSize:Vector3)
     local self = {}
     self.root = root
     self.cellSize = cellSize
+    self.gridSize = gridSize
 
     setmetatable(self, Grid)
 
