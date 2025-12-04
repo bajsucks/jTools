@@ -33,5 +33,7 @@ return jTools :: typeof({
 	Cps = require(script.Cps),					-- clicks per second measure (via PerSecond + UIS)
 	Collect = require(script.Collect),			-- CollectionService utils
 	Janitor = require(script.Janitor),			-- Janitor
-	SignalPlus = require(script.SignalPlus)		-- Signal
+	SignalPlus = require(script.SignalPlus),	-- Signal
+	GridUtil = require(script.GridUtil),		-- Utils for working with grid building systems
+	--
 })
