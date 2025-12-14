@@ -16,6 +16,7 @@ if RunService:IsClient() then return Cashier end -- server only tool!
 
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
+local t = require(script.Parent.t)
 
 local Register = {}
 local cache = {}
@@ -70,6 +71,8 @@ end
 
 -- binds a function to when a dev product is purchased
 function Cashier.AddProduct(ProductId: number, OnPurchase: (Player)->())
+    local c = t.tuple(t.number, t.callback)
+    assert(c(ProductId, OnPurchase))
     Register[tostring(ProductId)] = {
         Id = ProductId,
         OnPurchase = OnPurchase,
@@ -80,6 +83,8 @@ end
     also provides a label alias for that pass
 ]]
 function Cashier.AddPass(GamepassId: number, OnReapply: (Player)->(), label: string, OnPurchase: (Player)->()?)
+    local c = t.tuple(t.number, t.callback, t.optional(t.callback))
+    assert(c(GamepassId, OnReapply, OnPurchase))
     table.insert(GamepassLabels, {GamepassId, label})
     Register[tostring(GamepassId)] = {
         Id = GamepassId,

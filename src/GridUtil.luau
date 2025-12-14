@@ -1,3 +1,4 @@
+local t = require(script.Parent.t)
 --[[
     Utilities for working with grid-based systems
 
@@ -13,6 +14,8 @@ Grid.__index = Grid
 ]]
 function GridUtil.new(root:CFrame, cellSize:Vector3, gridSize:Vector3)
     local self = {}
+    local c = t.tuple(t.CFrame, t.Vector3, t.Vector3)
+    assert(c(root, cellSize, gridSize))
     self.root = root
     self.cellSize = cellSize
     self.gridSize = gridSize
