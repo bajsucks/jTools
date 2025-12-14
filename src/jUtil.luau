@@ -229,10 +229,11 @@ function Util.deepClone(original: {})
 	return clone
 end
 
+-- probably not entirely random
 function Util.ShuffleTable(t: {})
+	local r = Random.new()
     for i = #t, 2, -1 do
-		--selene: allow(incorrect_standard_library_use)
-        local j = Random:NextInteger(1, i)
+        local j = r:NextInteger(1, i)
         t[i], t[j] = t[j], t[i]
     end
 end
