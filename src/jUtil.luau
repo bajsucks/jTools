@@ -229,6 +229,13 @@ function Util.deepClone(original: {})
 	return clone
 end
 
+function Util.ShuffleTable(t: {})
+    for i = #t, 2, -1 do
+		--selene: allow(incorrect_standard_library_use)
+        local j = Random:NextInteger(1, i)
+        t[i], t[j] = t[j], t[i]
+    end
+end
 
 function Util.WaitForChildWhichIsA(instance:Instance, Types:{string}, timeout:number?)
 	timeout = timeout or 10
