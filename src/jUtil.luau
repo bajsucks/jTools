@@ -76,6 +76,14 @@ function Util.DictHasValue(dict, value)
 	return false
 end
 
+function Util.DictCount(dict)
+	local i = 0
+	for _ in dict do
+		i += 1
+	end
+	return i
+end
+
 -- supports max of ~1e66-1e68
 function Util.Abr(Num: number): string
 	local suffixes = {"", "K", "M", "B", "T", "QA", "QI", "SX", "SP", "OC", "NO", "DC", "UD", "DD", "TD", "QAD", "QID", "SXD", "SPD", "OCD", "NOD", "VG", "UVG"}
