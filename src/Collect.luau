@@ -7,7 +7,7 @@ function Collect.GetTaggedDescendants(inst:Instance, tag:string): {Instance?}
 	local tagged = CollectionService:GetTagged(tag)
 	for _, v in tagged do
 		if v:IsDescendantOf(inst) then
-            table.insert(desc, v)
+            table.insert(desc, inst)
         end
 	end
 	return desc
@@ -18,8 +18,9 @@ function Collect.GetTaggedChildren(inst:Instance, tag:string): {Instance?}
 	local children = {}
 	local tagged = CollectionService:GetTagged(tag)
 	for _, v in tagged do
-		if inst:IsAncestorOf(v) then
-            table.insert(children, v)
+		if not v.Parent then continue end
+		if v.Parent == inst then
+            table.insert(children, inst)
         end
 	end
 	return children

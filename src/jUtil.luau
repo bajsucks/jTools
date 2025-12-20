@@ -86,7 +86,6 @@ end
 
 function Util.RandFromDict(dict)
 	local dc = Util.DictCount(dict)
-	if dc == 0 then return nil end
 	local n = math.random(1, dc)
 	local i = 0
 	for _, v in dict do
