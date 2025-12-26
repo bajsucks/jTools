@@ -35,4 +35,5 @@ return jTools :: typeof({
 	Janitor = require(script.Janitor),			-- Janitor
 	SignalPlus = require(script.SignalPlus),	-- Signal
 	GridUtil = require(script.GridUtil),		-- Utils for working with grid building systems
+	Cashier = require(script.Cashier),			-- Devproduct and gamepass handler
 })
