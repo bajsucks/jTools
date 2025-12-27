@@ -352,7 +352,7 @@ If PlayerList is provided, will search that list instead.
 function Util.GetFriendsOnServer(Player:Player, PlayerList:{Player}?)
 	local result = {}
 	for _, p in (PlayerList and PlayerList or Players:GetPlayers()) do
-		if Player:IsFriendsWith(p.UserId) then
+		if Player:IsFriendsWithAsync(p.UserId) then
 			table.insert(result, p)
 		end
 	end
