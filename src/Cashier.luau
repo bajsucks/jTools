@@ -12,7 +12,7 @@ local Cashier = {}
 
 local RunService = game:GetService("RunService")
 
-if RunService:IsClient() then return Cashier end -- server only tool!
+if RunService:IsClient() then return Cashier end -- server-only tool!
 
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
@@ -22,14 +22,14 @@ local Register = {}
 local cache = {}
 local GamepassLabels: {number|string} = {} -- [1]: Id, [2]: label
 
-local function GetLabelFromId(Id: number)
+local function GetLabelFromId(Id: number): string
     for _, v in GamepassLabels do
         if v[1] == Id then return v[2] end
     end
     error("Tried to get a label that was not yet defined!")
 end
 
-local function GetIdFromLabel(label: string)
+local function GetIdFromLabel(label: string): number
     for _, v in GamepassLabels do
         if v[2] == label then return v[1] end
     end
@@ -56,8 +56,8 @@ local function DevproductPurchase(Receipt)
     local Player = Players:GetPlayerByUserId(Receipt.PlayerId)
     if not Player or not Entry.OnPurchase then return Enum.ProductPurchaseDecision.NotProcessedYet end
 
-    Entry.OnPurchase(Player)
-    return Enum.ProductPurchaseDecision.PurchaseGranted
+    local Result = Entry.OnPurchase(Player)
+    return Result == false and Enum.ProductPurchaseDecision.PurchaseGranted or Enum.ProductPurchaseDecision.NotProcessedYet
 end
 
 local function GamepassPurchase(Player: Player, GamepassId: number, WasPurchased: boolean)
