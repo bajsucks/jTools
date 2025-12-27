@@ -1,9 +1,9 @@
-local t = require(script.Parent.t)
 --[[
     Utilities for working with grid-based systems
 
     Experimental but should work good
 ]]
+local t = require(script.Parent.t)
 local GridUtil = {}
 
 local Grid = {}

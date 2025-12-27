@@ -1,3 +1,6 @@
+--[[
+	Add tags to messages and display system messages
+]]
 local TextChatService = game:GetService("TextChatService")
 local GeneralChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
 

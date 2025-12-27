@@ -3,9 +3,10 @@
     
     It takes up the .ProcessReceipt callback
     If you want to create a new connection to the callback,
-    please, care to use this wrapper. It's not hard.
+    please, care to use this wrapper.
 
-    EXPERIMENTAL: Has not yet been tested
+    Gamepass functions are EXPERIMENTAL
+    Devproduct functions are IN TESTING
 ]]
 
 local Cashier = {}

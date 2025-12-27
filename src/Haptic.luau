@@ -1,3 +1,7 @@
+--[[
+	Haptic is EXPERIMENTAL.
+	has NOT yet been tested.
+]]
 local Haptics = {}
 
 function Haptics.UIClick()
