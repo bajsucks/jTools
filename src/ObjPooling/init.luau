@@ -1,3 +1,4 @@
+-- https://github.com/InfernoAmaruq/EasyPool
 --!strict
 --!native
 --!optimize 2
