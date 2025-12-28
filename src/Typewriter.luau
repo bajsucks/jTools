@@ -1,3 +1,6 @@
+--[[
+	This thing needs a rework eventually
+]]
 local Writer = {}
 
 function Writer.Typewrite(box: TextLabel|TextBox, str: string, Time: number, onCharacter: ()->()?, onEnd: ()->()?): ()->()

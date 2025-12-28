@@ -1,3 +1,6 @@
+--[[
+	This thing needs a rework eventually
+]]
 local Cam = {}
 local Storage = {
 	["Blur"] = {}

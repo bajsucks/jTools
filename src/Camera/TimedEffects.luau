@@ -1,3 +1,6 @@
+--[[
+	This thing needs a rework eventually
+]]
 --!nonstrict
 local TimedEffects = {}
 local HttpService = game:GetService("HttpService")
