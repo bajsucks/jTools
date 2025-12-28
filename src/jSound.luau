@@ -1,37 +1,102 @@
+--[[
+	Easy management of sounds, music playlists
+]]
+
+-- enable dynamic typechecking
+local DEBUG = false
+-- Object pool size. It is adviced you rise it if sound effects are frequent
+local OBJ_POOL3D = 200
+local OBJ_POOL2D = 100
+
 local jSound = {}
+local Playlist = {}
+Playlist.__index = Playlist
 
 local SoundService = game:GetService("SoundService")
-local folder = workspace:FindFirstChild("jSounds")
-local TweenService = game:GetService("TweenService")
+local folder = workspace:FindFirstChild("jSounds") -- This folder will be used for temp instances in jSound.LocalSFX
+
+local Janitor = require(script.Parent.Janitor)
+local ObjPooling = require(script.Parent.ObjPooling)
 local jUtil = require(script.Parent.jUtil)
---local par = workspace:WaitForChild("jsoundthing"):WaitForChild("Part")
+local t = require(script.Parent.t)
+
+local Params = {
+	LoadWait = 1,
+	AutoExpand = true,
+	MaxPoolSize = 1000
+}
+local Sound3D = Instance.new("Attachment")
+do
+	local sound = Instance.new("Sound")
+	sound.Name = "s"
+	sound.Parent = Sound3D
+end
+
+local Pool3D = ObjPooling.new(OBJ_POOL3D, Sound3D, Params)
+local Pool2D = ObjPooling.new(OBJ_POOL2D, Instance.new("Sound"), Params)
+
 if not folder then
 	folder = Instance.new("Folder")
 	folder.Parent = workspace
 	folder.Name = "jSounds"
 end
 
-local function err(message:string)
-	return "[jSound] "..message
+--[[
+	Equals 2 sounds
+]]
+local function Equal(SoundTarget:Sound, Soundtemplate:Sound)
+	SoundTarget.Volume = Soundtemplate.Volume
+	SoundTarget.PlaybackSpeed = Soundtemplate.PlaybackSpeed
+	SoundTarget.SoundId = Soundtemplate.SoundId
+	SoundTarget.RollOffMaxDistance = Soundtemplate.RollOffMaxDistance
+	SoundTarget.RollOffMinDistance = Soundtemplate.RollOffMinDistance
+	SoundTarget.TimePosition = Soundtemplate.TimePosition
+	SoundTarget.RollOffMode = Soundtemplate.RollOffMode
 end
+--[[
+	Resets a sound to it's original state after pool usage
+]]
 
--- Sound: sound instance to clone
-function jSound.GlobalSFX(Sound:Sound, sg:SoundGroup?)
-	if not Sound then
-        error(err("GlobalSFX Parameter underload!"))
-    end
-	local p = sg or SoundService 
-	local s:Sound = Sound:Clone()
-	s.Parent = p
-	s.SoundGroup = sg
+
+local checkGlobalSFX = t.tuple(t.instanceIsA("Sound"), t.optional(t.instanceIsA("SoundGroup")))
+
+--[[
+	Create a sound effect in 2D space. The sound will be destroyed when it ends.
+
+	It is ill-advised to interact with instances created by this function, as they are pooled.
+
+	@param Sound Sound to clone. Children will not be preserved
+	@param SoundGroup Optional sound group to parent the sound to
+]]
+function jSound.GlobalSFX(Sound:Sound, SoundGroup:SoundGroup?)
+	if DEBUG then
+		assert(checkGlobalSFX(Sound, SoundGroup))
+	end
+	local p = SoundGroup or SoundService 
+	local Queued = Pool2D:LoadItem(p)
+	local s:Sound = Queued.Instance
+	s.SoundGroup = SoundGroup
+	Equal(s, Sound)
 	s:Play()
-	jUtil.Debris(s, s.PlaybackSpeed * s.TimeLength)
+	s.Ended:Once(Queued.Unload, Queued)
 end
 
-function jSound.LocalSFX(Where:Vector3|CFrame|PVInstance, s:Sound, sg:SoundGroup?)
-	if not Where or not s then
-        error(err("LocalSFX Parameter underload!"))
-    end
+-- unreadable piece of shit. All it does is it just checks types of the function LocalSFX
+local CheckLocalSFX = t.tuple(t.union(t.Vector3, t.CFrame, t.instanceIsA("PVInstance")), t.instanceIsA("Sound"), t.optional(t.instanceIsA("SoundGroup")))
+
+--[[
+	Play a sound effect in 3D space. The sound will be destroyed when it ends.
+
+	It is ill-advised to interact with instances created by this function, as they are pooled.
+	
+	@param Where Where the sound will play
+	@param Sound Sound to clone. Children will not be preserved
+	@param SoundGroup Optional sound group to parent the sound to
+]]
+function jSound.LocalSFX(Where:Vector3|CFrame|PVInstance, Sound:Sound, SoundGroup:SoundGroup?)
+	if DEBUG then
+		assert(CheckLocalSFX(Where, Sound, SoundGroup))
+	end
 	local pos:Vector3
 	if typeof(Where) == "Vector3" then
 		pos = Where
@@ -41,193 +106,174 @@ function jSound.LocalSFX(Where:Vector3|CFrame|PVInstance, s:Sound, sg:SoundGroup
 		pos = Where:GetPivot().Position
 	end
 	
-	local p = Instance.new("Part")
-	p.Transparency = 1
-	p.CanCollide = false
-	p.CanTouch = false
-	p.CanQuery = false
-	p.Size = Vector3.new(0.05, 0.05, 0.05)
-	p.Anchored = true
-	p:PivotTo(CFrame.new(pos))
-	p.Parent = folder
-	s = s:Clone()
-	s.SoundGroup = sg
-	s.Parent = p
+	local Queued = Pool3D:LoadItem(folder)
+	local attach = Queued.Instance
+	attach.WorldPosition = pos
+	local s:Sound = attach.s
+	Equal(s, Sound)
+	s.SoundGroup = SoundGroup
 	s:Play()
-	jUtil.Debris(p, s.TimeLength / s.PlaybackSpeed)
+	s.Ended:Once(Queued.Unload, Queued)
 end
 
--- TODO: Rewrite playlists (it's kinda ugly, works though)
+local PlaylistChecker = t.tuple(t.table, t.optional(t.boolean), t.optional(t.instanceIsA("SoundGroup")))
 
-export type Playlist = {
-	["List"]: {string},
-	["Shuffle"]: boolean,
-	-- awesome function
-	["Skip"]: (self: Playlist) -> (),
-	["Pause"]: (self: Playlist) -> (),
-	["Resume"]: (self: Playlist) -> (),
-	["PlayIndex"]: (self: Playlist, index: number) -> (),
-	["ChangePlaylist"]: (self: Playlist, newList: {string}, PreserveQueue: boolean?) -> ()
-}
-local DefaultSettings: Playlist = {
-	["List"] = {},
-	["Shuffle"] = true
-}
+--[[
+	Create a new playlist.
+	@param List Sounds to be used in the playlist. Sounds will be cloned.
+	@param Shuffle Whether or not the playlist should play songs in a random order
+	@param SoundGroup Sound group that the playlist should use
+]]
+function jSound.NewPlaylist(List:{Sound}, Shuffle:boolean?, SoundGroup:SoundGroup?)
+	if DEBUG then
+		assert(PlaylistChecker(List, Shuffle, SoundGroup))
+	end
+	if #List < 1 then
+		error("Playlists cannot have 0 items!", 2)
+	end
+	local self = setmetatable({}, Playlist)
 
-function jSound.PlaylistNew(List:{Sound|string}, Shuffle:boolean?, sg:SoundGroup?): Playlist
-	local R = Random.new()
-	if typeof(List) ~= "table" then
-        List = {}
-    end
-	if typeof(Shuffle) ~= "boolean" then
-        Shuffle = true
-        R:Shuffle(List)
-    end
-	if typeof(sg) ~= "Instance" then
-        error(err("Error creating a new playlist: No soundgroup was provided!"))
-        return
-    end
-	local SongEnded = Instance.new("BindableEvent")
-	local pl:Playlist = jUtil.deepClone(DefaultSettings)
-	pl.List = List or pl.List
-	pl.Shuffle = typeof(Shuffle) == "boolean" and Shuffle or pl.Shuffle
-	local s = Instance.new("Sound")
-	s.Parent = sg
-	s.SoundGroup = sg
-	s.Volume = 0.5
-	s:Play()
-	s.Ended:Connect(function()
-        SongEnded:Fire()
-    end)
-	
-	local cache = {}
-	local curIndex = 1
-	local TransitionLock = false
-	local Paused = false
-	
-	-- finds next track and returns soundid
-	local function NextTrack()
-		curIndex += 1
-		if curIndex > #pl.List then
-            curIndex = 1
-        end
-		if pl.Shuffle and #pl.List > 2 then
-			local id = nil
-			while true do
-				local ran = math.random(1, #pl.List)
-				if not table.find(cache, pl.List[ran]) then
-                    id = pl.List[ran]
-                    table.insert(cache, pl.List[ran])
-                    break
-                end
-			end
-			if #cache >= 3 then
-                table.remove(cache, 1)
-            end
-			return id
-		else
-			return pl.List[curIndex]
-		end
+	self.ShouldShuffle = Shuffle or false
+	self.SoundGroup = SoundGroup
+	self.CurrentIndex = 1
+	self.IsPlaying = false
+	self.IsPaused = false
+	self._Janitor = Janitor.new()
+	self.List = {}
+
+	for _, v in List do
+		local t = v:Clone()
+		t.Looped = false
+		table.insert(self.List, t)
 	end
-	
-	local function HandleSoundId(Copy:Sound|string)
-		local is = typeof(Copy) == "Instance"
-		s:ClearAllChildren()
-		s.SoundId = is and Copy.SoundId or Copy
-		if not is then return end
-		for _, v in Copy:GetChildren() do
-			local clone = v:Clone()
-			clone.Parent = s
-		end
+	self:NewSG(self.SoundGroup)
+
+	if self.ShouldShuffle then
+		self:Shuffle()
 	end
-	
-	local CancelTransition = Instance.new("BindableEvent")
-	local function Transition(to:Sound|string)
-		CancelTransition:Fire()
-		local cancel = false
-		task.spawn(function()
-			CancelTransition.Event:Wait()
-			cancel = true
+
+	self:Play()
+
+	return self
+end
+
+--[[
+	Gets the song at a given index
+]]
+function Playlist._GetIndex(self:Playlist, index:number)
+	return self.List[index]
+end
+
+--[[
+	Gets the song at the current index
+]]
+function Playlist._Get(self:Playlist)
+	return self:_GetIndex(self.CurrentIndex)
+end
+
+--[[
+	Play the song on current index
+]]
+function Playlist.Play(self:Playlist)
+	if self.IsPlaying then return end
+	local Sound = self:_GetIndex(self.CurrentIndex)
+	self.IsPlaying = true
+	self.IsPaused = false
+	Sound:Play()
+	self._Janitor:Add(
+		Sound.Ended:Connect(function()
+			self:Skip()
 		end)
-		--if typeof(to) == "string" then
-		TransitionLock = true
-		TweenService:Create(s, TweenInfo.new(1), {Volume = 0}):Play()
-		task.wait(1)
-		if cancel then return end
-		HandleSoundId(to)
-		s:Play()
-		TransitionLock = false
-		SongEnded:Fire()
-		TweenService:Create(s, TweenInfo.new(1), {Volume = 0.5}):Play()
-		task.wait(1)
-			-- i tried
-		--elseif typeof(to) == "boolean" then
-		--	if to then
-		--		s:Resume()
-		--		TweenService:Create(s, TweenInfo.new(1), {Volume = 0.5}):Play()
-		--	else
-		--		TweenService:Create(s, TweenInfo.new(1), {Volume = 0}):Play()
-		--		task.wait(1)
-		--		if not cancel then
-		--			s:Pause()
-		--		end
-		--	end
-		--end
-	end
-	
-	function pl:Skip()
-		Transition(NextTrack())
-	end
-	
-	function pl:Pause()
-		Paused = true
-		s:Pause()
-		--Transition(false)
-	end
-	
-	function pl:Resume()
-		Paused = false
-		s:Resume()
-		--Transition(true)
-	end
-	
-	function pl:PlayIndex(index:number)
-		if typeof(index) ~= "number" or not self.List[index] then
-            error(err("PlayIndex: Invalid index!"))
-            return
-        end
-		Transition(self.List[index])
-	end
-	
-	local CachedLists = {}
-	function pl:ChangePlaylist(newList:{string|Sound}, PreserveQueue:boolean?)
-		if not newList then
-            error(err("Can't change playlist: Provided new list was invalid!"))
-            return
-        end
-		CachedLists[self.List] = curIndex
-		if PreserveQueue and CachedLists[newList] then
-			CachedLists[self.List] = curIndex
-			curIndex = CachedLists[newList]-1
-		else
-			curIndex = 0
-		end
-		self.List = newList
-		SongEnded:Fire()
-	end
-	
-	task.spawn(function()
-		while true do
-			if TransitionLock or Paused then task.wait() else
-				s:Play()
-				local nt = NextTrack()
-				HandleSoundId(nt)
-				SongEnded.Event:Wait()
-			end
-		end
-	end)
-	
-	return pl
+	)
 end
+
+--[[
+	Stop the song on current index
+]]
+function Playlist.Stop(self:Playlist)
+	local Sound = self:_Get()
+	self.IsPlaying = false
+	self.IsPaused = false
+	self._Janitor:Cleanup()
+	Sound:Stop()
+end
+
+--[[
+	Pause a playlist
+	
+	Note that it stays in memory; To destroy a playlist, use :Destroy()
+]]
+function Playlist.Pause(self:Playlist)
+	if not self.IsPlaying or self.IsPaused then return end
+	local Sound = self:_Get()
+	Sound:Pause()
+	self.IsPaused = true
+end
+
+--[[
+	Resume a playlist
+]]
+function Playlist.Resume(self:Playlist)
+	if not self.IsPlaying or not self.IsPaused then return end
+	local Sound = self:_Get()
+	Sound:Resume()
+	self.IsPaused = false
+end
+
+--[[
+	Skips the currently playing track
+]]
+function Playlist.Skip(self:Playlist)
+	if self.IsPlaying then
+		self:Stop()
+		self.CurrentIndex = jUtil.WrapNumber(self.CurrentIndex + 1, #self.List)
+		self:Play()
+	else
+		self.CurrentIndex = jUtil.WrapNumber(self.CurrentIndex + 1, #self.List)
+	end
+end
+
+--[[
+	Randomizes the playlist.
+
+	Note that current song will be skipped.
+]]
+function Playlist.Shuffle(self:Playlist)
+	if not self.IsPlaying then
+		self.CurrentIndex = 1
+		jUtil.ShuffleTable(self.List)
+	else
+		self:Stop()
+		self.CurrentIndex = 1
+		jUtil.ShuffleTable(self.List)
+		self:Play()
+	end
+end
+
+--[[
+	Assign a new SoundGroup for this playlist
+
+	@param sg SoundGroup to assign the playlist to. Can be nil
+]]
+function Playlist.NewSG(self:Playlist, sg:SoundGroup?)
+	self.SoundGroup = sg
+	for _, v in self.List do
+		v.SoundGroup = sg
+		v.Parent = sg or SoundService
+	end
+end
+
+--[[
+	Disconnects all connections and removes a playlist.
+]]
+function Playlist.Destroy(self:Playlist)
+	self:Stop()
+	for _, v in self.List do
+		v:Destroy()
+	end
+	self = nil
+end
+
+export type Playlist = typeof(jSound.NewPlaylist())
 
 return jSound
