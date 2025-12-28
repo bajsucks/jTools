@@ -1,45 +1,37 @@
--- todo rewrite
-local List = {}
+--[[
+	Calculate stuff per second
+]]
+local t = require(script.Parent.t)
 local module = {}
-module.__index = List
+local List = {}
+List.__index = List
 
 function module.new(expire:number)
-	return setmetatable({expire = expire, list = {}}, module)
+	return setmetatable({expire, {}}, List)
+end
+function List.AddItem(self:List, Value:number)
+	assert(t.number(Value))
+	table.insert(self[2], {os.clock(), Value})
+	task.delay(self[1], table.remove, self[2], 1)
 end
 
-local t = 0
-function List:AddItem(value: number)
-	if typeof(value) ~= "number" then
-        warn("incorrect value passed in Per second calculation!")
-        return
-    end
-	t += 1
-	local rec = tostring(t)
-	task.spawn(function()
-		self.list[rec] = {os.clock(), value}
-		task.wait(self.expire)
-		self.list[rec] = nil
-	end)
-end
-
-function List:GetPerSecond()
-	local totalValue = 0
-	local oldestTime = math.huge
-	local currentTime = os.clock()
-
-	for _, tbl in self.list do
-		totalValue += tbl[2]
-		oldestTime = math.min(oldestTime, tbl[1])
+function List.GetPerSecond(self:List)
+	local CurrentTime = os.clock()
+	local OldestTime = CurrentTime
+	local TotalVal = 0
+	for _, tbl in self[2] do
+		TotalVal += tbl[2]
+		local RecordTime: number = tbl[1]
+		OldestTime = math.min(OldestTime, RecordTime)
 	end
-
-	if totalValue < 1 then return 0 end
-
-	local actualWindow = currentTime - oldestTime
-	if actualWindow < 0.1 then return 0 end -- avoid division by tiny numbers
-	
-	local result = totalValue / actualWindow
-	return result < totalValue and result or totalValue
+	if TotalVal < 1 then return 0 end
+	local Window = CurrentTime - OldestTime
+	if Window < 0.1 then return 0 end
+	local result = TotalVal / Window
+	return result < TotalVal and result or TotalVal
 end
+
+type List = typeof(module.new())
 
 
 return module
