@@ -25,9 +25,7 @@ function List.GetPerSecond(self:List)
 		OldestTime = math.min(OldestTime, RecordTime)
 	end
 	if TotalVal < 1 then return 0 end
-	local Window = CurrentTime - OldestTime
-	if Window < 0.1 then return 0 end
-	local result = TotalVal / Window
+	local result = TotalVal / self[1]
 	return result < TotalVal and result or TotalVal
 end
 
