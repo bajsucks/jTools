@@ -53,4 +53,5 @@ return jTools :: typeof({
 	GridUtil = require(script.GridUtil),		-- Utils for working with grid building systems
 	Cashier = require(script.Cashier),			-- Devproduct and gamepass handler
 	ObjPooling = require(script.ObjPooling),	-- Object pooling lib
+	Scaler = require(script.Scaler),			-- Complex multipliers
 })
