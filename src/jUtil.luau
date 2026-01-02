@@ -40,6 +40,13 @@ function Util.ClearChildrenExcept(Inst:Instance, Type:{string})
 	end
 end
 
+--[[
+	Alias to Util.ClearChildrenExcept(Inst, {"UIComponent"})
+]]
+function Util.ClearGUI(Inst:Instance)
+	Util.ClearChildrenExcept(Inst, {"UIComponent"})
+end
+
 function Util.ClearDescendantsWhichAre(Inst:Instance, Type:{string})
 	for _, v in Inst:GetDescendants() do
 		if Util.IsA(v, Type) then
@@ -75,7 +82,9 @@ function Util.DictHasValue(dict, value)
 	end
 	return false
 end
-
+--[[
+	Returns the number of indecies in a dictionary, or 0 if empty
+]]
 function Util.DictCount(dict)
 	local i = 0
 	for _ in dict do
@@ -83,7 +92,10 @@ function Util.DictCount(dict)
 	end
 	return i
 end
-
+--[[
+	Gets a random index from the given dictionary.
+	Uses `math.random()` to select the random.
+]]
 function Util.RandFromDict(dict)
 	local dc = Util.DictCount(dict)
 	if dc == 0 then return end
@@ -96,7 +108,11 @@ function Util.RandFromDict(dict)
 	error("something went wrong lol how")
 end
 
--- supports max of ~1e66-1e68
+--[[
+	Abbreviates a number
+	Supports max of ~1e66-1e68
+
+]]
 function Util.Abr(Num: number): string
 	local suffixes = {"", "K", "M", "B", "T", "QA", "QI", "SX", "SP", "OC", "NO", "DC", "UD", "DD", "TD", "QAD", "QID", "SXD", "SPD", "OCD", "NOD", "VG", "UVG"}
 	if Num < 1000 then
@@ -127,7 +143,10 @@ function Util.WrapNumber(Num: number, Max:number)
         return rem
     end
 end
-
+--[[
+	Debris but better
+	Minimum wait time - 1 frame
+]]
 function Util.Debris(Inst:Instance|{Instance}, t:number)
 	if typeof(t) ~= "number" then
         t = 0
@@ -146,7 +165,9 @@ function Util.Debris(Inst:Instance|{Instance}, t:number)
 		error("Invalid instance provided for Debris!", 2)
 	end
 end
-
+--[[
+	Disable reset on the client
+]]
 function Util.ClientDisableReset()
 	local coreCall do
 		local MAX_RETRIES = 8
@@ -166,11 +187,15 @@ function Util.ClientDisableReset()
 	end
 	coreCall('SetCore', 'ResetButtonCallback', false)
 end
-
+--[[
+	Sets the Y axis of a vector to 0 and returns the resulting vector
+]]
 function Util.VectorNoY(Vec:Vector3): Vector3
 	return Vector3.new(Vec.X, 0, Vec.Z)
 end
-
+--[[
+	I'm not sure if this works
+]]
 function Util.Preload(List: {string})
 	local t, err = pcall(function()
 		ContentProvider:PreloadAsync(List)
@@ -188,7 +213,9 @@ local function scaleToPivot(pivotPos, partPos, scaleFactor)
 		(pivotPos.Z + scaleFactor * (partPos.Z - pivotPos.Z))
 	)
 end
-
+--[[
+	Scale a part accounting for it's pivot
+]]
 function Util.PivotScale(inst: BasePart, scale: number)
 	if not inst:IsA("BasePart") or not scale then
         error("Incorrect arguments passed!", 2)
@@ -199,7 +226,9 @@ function Util.PivotScale(inst: BasePart, scale: number)
 	inst.Position = scaleToPivot(pivotPos, inst.Position, scale)
 	inst.PivotOffset = CFrame.new(inst.PivotOffset.Position * scale)
 end
-
+--[[
+	Converts seconds to format XXd XXh XXm XXs
+]]
 function Util.SecondsToReadableTime(t:number)
 	if not t then
         warn("Convert fail: No seconds were provided!")
@@ -220,14 +249,19 @@ function Util.SecondsToReadableTime(t:number)
 	end
 	return string.format("%02is", seconds)
 end
-
+--[[
+	Returns whether a table/dict is empty
+]]
 function Util.IsTableEmpty(dict:{[any]: any}): boolean
 	for _ in dict do
 		return false
 	end
 	return true
 end
-
+--[[
+	Clone a table/dict and returns the clone.
+	Does not support recursion!
+]]
 function Util.deepClone(original: {})
 	if typeof(original) ~= "table" then
 		error("Can only deep clone tables!", 2)
@@ -241,7 +275,10 @@ function Util.deepClone(original: {})
 	return clone
 end
 
--- probably not entirely random
+--[[
+	Randomizes indecies of a table
+	Probably not entirely random
+]]
 function Util.ShuffleTable(t: {})
 	local r = Random.new()
     for i = #t, 2, -1 do
@@ -278,6 +315,9 @@ function Util.WaitForChildWhichIsA(instance:Instance, Types:{string}, timeout:nu
 	j:Destroy()
 	return child
 end
+--[[
+	Prompt the local player to add the game to favorites
+]]
 function Util.PromptAddGameToFavorites()
 	local AvatarEditorService = game:GetService("AvatarEditorService")
 	AvatarEditorService:PromptSetFavorite(game.PlaceId, Enum.AvatarItemType.Asset, true)
@@ -285,6 +325,9 @@ end
 do
 	local db = {}
 	local queue = {}
+	--[[
+		This needs review
+	]]
 	function Util.GiveBadge(plr, id)
 		if not plr or not id then return end
 		if not db[plr] then db[plr] = true else
@@ -296,7 +339,7 @@ do
 		local success, badgeInfo = pcall(BadgeService.GetBadgeInfoAsync, BadgeService, id)
 		if success then
 			if badgeInfo.IsEnabled then
-				local awarded, errorMessage = pcall(BadgeService.AwardBadge, BadgeService, plr.UserId, id)
+				local awarded, errorMessage = pcall(BadgeService.AwardBadgeAsync, BadgeService, plr.UserId, id)
 				task.delay(3, function()
 					db[plr] = false
 					if queue[plr] and queue[plr][1] then
@@ -315,7 +358,10 @@ do
 end
 
 if RunService:IsClient() then
-	function Util.ChangeControls(state)
+	--[[
+		Switch player controls on/off
+	]]
+	function Util.ChangeControls(state: boolean)
 		local LocalPlayer = Players.LocalPlayer
 		local Controls = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls()
 		if state then
@@ -324,18 +370,24 @@ if RunService:IsClient() then
 			Controls:Disable()
 		end
 	end
-
+	--[[
+		Returns UserInputService.MouseEnabled
+	]]
 	function Util.HasMouse()
 		local UserInputService = game:GetService("UserInputService")
 		return UserInputService.MouseEnabled
 	end
-
+	--[[
+		Returns UserInputService.PreferredInput
+	]]
 	function Util.GetPreferredInput()
 		local UserInputService = game:GetService("UserInputService")
 		return UserInputService.PreferredInput
 	end
-
-	function Util.PlayerList(state)
+	--[[
+		Sets leaderboard (player list) CoreGUI on/off
+	]]
+	function Util.PlayerList(state: boolean)
 		game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, state)
 	end
 end
@@ -359,6 +411,9 @@ function Util.GetFriendsOnServer(Player:Player, PlayerList:{Player}?)
 	return result
 end
 
+--[[
+	This needs review
+]]
 function Util.GradientBar(gradient, intersects)
 	--table.sort(intersects, function(a, b) return a.Intersect < b.Intersect end)
 	local sequence = {}
@@ -381,7 +436,10 @@ function Util.GradientBar(gradient, intersects)
 	end
 	gradient.Color = ColorSequence.new(sequence)
 end
-
+--[[
+	Tween a model to a target CFrame;
+	This needs review
+]]
 function Util.TweenPivotTo(PV:PVInstance, info:TweenInfo, targetcf:CFrame)
 	local TweenService = game:GetService("TweenService")
 	
@@ -401,7 +459,9 @@ function Util.TweenPivotTo(PV:PVInstance, info:TweenInfo, targetcf:CFrame)
 		con:Disconnect()
 	end)
 end
-
+--[[
+	workspace:BulkMoveTo, but accounts for pivot
+]]
 function Util.BulkPivotTo(models:{PVInstance}, CFrames:{CFrame}, mode:Enum.BulkMoveMode)
 	local newCFrames = {}
 	local newModels = {}
@@ -411,6 +471,13 @@ function Util.BulkPivotTo(models:{PVInstance}, CFrames:{CFrame}, mode:Enum.BulkM
 		table.insert(newCFrames, CFrames[i] * pivotOffset)
 	end
 	workspace:BulkMoveTo(newModels, newCFrames, mode)
+end
+
+function Util.HasProperty(Obj:Instance, Property:string)
+	local has = pcall(function()
+		local t = Obj[Property]
+	end)
+	return has
 end
 
 return Util
