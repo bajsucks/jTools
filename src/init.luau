@@ -2,7 +2,7 @@
 	jTools created and maintained by baj
 	jTools is a collection of various tools and instruments that are crucial in development.
 	You can see a short description of what each module does below and sometimes at first lines of modules themselves.
-	Version v3
+	Version v4
 	https://github.com/bajsucks/jTools
 
 
