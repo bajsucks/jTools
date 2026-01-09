@@ -10,7 +10,7 @@ export type Waiter = typeof(module.new())
 
 function module.new()
     local self = setmetatable({}, Waiter)
-    self.Queue = {} :: {[string]: thread}
+    self.Queue = {} :: {[string]: {thread}}
     return self
 end
 
