@@ -490,9 +490,36 @@ end
 
 function Util.HasProperty(Obj:Instance, Property:string)
 	local has = pcall(function()
-		local t = Obj[Property]
+		local _ = Obj[Property]
 	end)
 	return has
+end
+--[[
+	Get an object from a table/instance using a path
+	Format: (PlayerData, "Inventory/Weapons/Weapon1")
+	Will return nil if path is invalid
+]]
+function Util.ResolvePath(root:Instance|{[any]: any}, path: string): any?
+
+    local segments = string.split(path, "/")
+    local current: any = root
+
+    for _, segment in segments do
+
+        if type(current) == "table" then
+            current = current[segment]
+        elseif type(current) == "userdata" and current:IsA("Instance") then
+            current = current:FindFirstChild(segment) or current[segment]
+		else
+			return nil
+		end
+
+        if current == nil then
+            return nil
+        end
+    end
+
+    return current
 end
 
 return Util
