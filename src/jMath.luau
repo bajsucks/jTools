@@ -59,4 +59,12 @@ function Math.Decompress(CompressedNum: number)
 	return CompressedNum ~= 0 and (1.0000001^CompressedNum) or 0
 end
 
+--[[
+	Floors the number to to a nearest X.
+	Example: (44, 5) will return 40
+]]
+function Math.FloorToNearest(ToRound: number, ToNearest: number)
+	return ToNearest * math.floor(ToRound / ToNearest)
+end
+
 return Math
