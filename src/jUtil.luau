@@ -522,4 +522,13 @@ function Util.ResolvePath(root:Instance|{[any]: any}, path: string): any?
     return current
 end
 
+--[[
+	math.random() but safe
+]]
+function Util.random(min:number, max:number)
+    local Unsafe = math.random(min, max*10*math.random(1, 10))
+    return Util.WrapNumber(Unsafe, max)
+end
+
+
 return Util
