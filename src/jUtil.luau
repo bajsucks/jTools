@@ -227,27 +227,42 @@ function Util.PivotScale(inst: BasePart, scale: number)
 	inst.PivotOffset = CFrame.new(inst.PivotOffset.Position * scale)
 end
 --[[
-	Converts seconds to format XXd XXh XXm XXs
+	Converts seconds to a readable format
+	@param format Available formats: 1 - XXd XXh XXm XXs, 2 - XX:XX:XX:XX Default: 1
 ]]
-function Util.SecondsToReadableTime(t:number)
+function Util.SecondsToReadableTime(t:number, format:number?)
 	if not t then
         warn("Convert fail: No seconds were provided!")
         return
     end
+	format = format or 1
 	local days = math.floor(t/86400)
 	local hours = math.floor((t % 86400)/3600)
 	local minutes = math.floor(((t % 86400) % 3600)/60)
 	local seconds = math.floor((((t % 86400) % 3600)%60)/1)
-	if t >= 86400 then
-		return string.format("%id %02ih %02im %02is", days, hours, minutes, seconds)
+	if format == 1 then
+		if t >= 86400 then
+			return string.format("%id %02ih %02im %02is", days, hours, minutes, seconds)
+		end
+		if t >= 3600 then
+			return string.format("%02ih %02im %02is", hours, minutes, seconds)
+		end
+		if t >= 60 then
+			return string.format("%02im %02is", minutes, seconds)
+		end
+		return string.format("%02is", seconds)
+	else
+		if t >= 86400 then
+			return string.format("%i:%02i:%02i:%02i", days, hours, minutes, seconds)
+		end
+		if t >= 3600 then
+			return string.format("%02i:%02i:%02i", hours, minutes, seconds)
+		end
+		if t >= 60 then
+			return string.format("%02i:%02i", minutes, seconds)
+		end
+		return string.format("%02i", seconds)
 	end
-	if t >= 3600 then
-		return string.format("%02ih %02im %02is", hours, minutes, seconds)
-	end
-	if t >= 60 then
-		return string.format("%02im %02is", minutes, seconds)
-	end
-	return string.format("%02is", seconds)
 end
 --[[
 	Returns whether a table/dict is empty
