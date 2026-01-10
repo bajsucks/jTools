@@ -2,7 +2,7 @@
 	jTools created and maintained by baj
 	jTools is a collection of various tools and instruments that are crucial in development.
 	You can see a short description of what each module does below and sometimes at first lines of modules themselves.
-	Version v4
+	Version v5
 	https://github.com/bajsucks/jTools
 
 
@@ -54,4 +54,6 @@ return jTools :: typeof({
 	Cashier = require(script.Cashier),			-- Devproduct and gamepass handler
 	ObjPooling = require(script.ObjPooling),	-- Object pooling lib
 	Scaler = require(script.Scaler),			-- Complex multipliers
+	Waiter = require(script.Waiter),			-- Simplification of wait-for-object loops (poor man's Promise)
+	jsm = require(script.jsm),					-- State manager
 })
