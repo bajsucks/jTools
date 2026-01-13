@@ -21,7 +21,7 @@ local jUtil = require(script.Parent.jUtil)
 local t = require(script.Parent.t)
 
 local Params = {
-	LoadWait = 1,
+	LoadWait = 0,
 	AutoExpand = true,
 	MaxPoolSize = 1000
 }
@@ -88,8 +88,9 @@ local CheckLocalSFX = t.tuple(t.union(t.Vector3, t.CFrame, t.instanceIsA("PVInst
 	Play a sound effect in 3D space. The sound will be destroyed when it ends.
 
 	It is ill-advised to interact with instances created by this function, as they are pooled.
+
 	
-	@param Where Where the sound will play
+	@param Where Where the sound will play WARNING: if set to a PVInstance, the SFX will NOT be pooled! That might cause performance drops if it's very frequent
 	@param Sound Sound to clone. Children will not be preserved
 	@param SoundGroup Optional sound group to parent the sound to
 ]]
@@ -102,18 +103,25 @@ function jSound.LocalSFX(Where:Vector3|CFrame|PVInstance, Sound:Sound, SoundGrou
 		pos = Where
 	elseif typeof(Where) == "CFrame" then
 		pos = Where.Position
-	else
-		pos = Where:GetPivot().Position
 	end
-	
-	local Queued = Pool3D:LoadItem(folder)
-	local attach = Queued.Instance
-	attach.WorldPosition = pos
-	local s:Sound = attach.s
+	local s:Sound
+	if typeof(Where) == "Instance" then
+		local attach = Sound3D:Clone()
+		s = attach.s
+		s.Ended:Once(function()
+			attach:Destroy()
+		end)
+		attach.Parent = Where
+	else
+		local Queued = Pool3D:LoadItem(folder)
+		local attach = Queued.Instance
+		attach.WorldPosition = pos
+		s = attach.s
+		s.Ended:Once(Queued.Unload, Queued)
+	end
 	Equal(s, Sound)
 	s.SoundGroup = SoundGroup
 	s:Play()
-	s.Ended:Once(Queued.Unload, Queued)
 end
 
 local PlaylistChecker = t.tuple(t.table, t.optional(t.boolean), t.optional(t.instanceIsA("SoundGroup")))
