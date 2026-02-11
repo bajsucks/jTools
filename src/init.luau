@@ -2,7 +2,7 @@
 	jTools created and maintained by baj
 	jTools is a collection of various tools and instruments that are crucial in development.
 	You can see a short description of what each module does below and sometimes at first lines of modules themselves.
-	Version v5
+	Version v6
 	https://github.com/bajsucks/jTools
 
 
@@ -56,4 +56,5 @@ return jTools :: typeof({
 	Scaler = require(script.Scaler),			-- Complex multipliers
 	Waiter = require(script.Waiter),			-- Simplification of wait-for-object loops (poor man's Promise)
 	jsm = require(script.jsm),					-- State manager
+	Crumbs = require(script.Crumbs),			-- CFrame breadcrumb buffer, useful for train-like behaviors
 })
