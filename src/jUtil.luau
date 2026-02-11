@@ -523,12 +523,25 @@ function Util.ResolvePath(root:Instance|{[any]: any}, path: string): any?
 end
 
 --[[
-	math.random() but safe
+	math.random() but safe-ish (way harder to bruteforce)
 ]]
 function Util.random(min:number, max:number)
     local Unsafe = math.random(min, max*10*math.random(1, 10))
     return Util.WrapNumber(Unsafe, max)
 end
 
+--[[
+    Returns what day it is rn as a whole number
+]]
+function Util.Today()
+    return math.floor(os.time() / 86400)
+end
+
+--[[
+    Returns the number of seconds left until tomorrow
+]]
+function Util.SecondsUntilTomorrow()
+    return 86400 - (os.time() % 86400)
+end
 
 return Util
