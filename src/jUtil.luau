@@ -544,4 +544,11 @@ function Util.SecondsUntilTomorrow()
     return 86400 - (os.time() % 86400)
 end
 
+function Util.Weld(a:PVInstance, b:PVInstance)
+	local Weld = Instance.new("WeldConstraint")
+	Weld.Part0 = a
+	Weld.Part1 = b
+	Weld.Parent = a
+end
+
 return Util
