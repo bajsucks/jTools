@@ -117,11 +117,11 @@ function Cashier.ReapplyAll(Player: Player)
 end
 -- dumps all registered ids
 function Cashier.Dump()
-    local t = {}
+    local tbl = {}
     for _, v in Register do
-        table.insert(t, v.Id)
+        table.insert(tbl, v.Id)
     end
-    return t
+    return tbl
 end
 -- Get price of a product
 function Cashier.GetProductPrice(DevProductId: number)
