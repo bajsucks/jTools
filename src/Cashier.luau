@@ -123,6 +123,22 @@ function Cashier.Dump()
     end
     return t
 end
+-- Get price of a product
+function Cashier.GetProductPrice(DevProductId: number)
+    local success, info = pcall(function()
+        return MarketplaceService:GetProductInfoAsync(DevProductId, Enum.InfoType.Product)
+    end)
+    if success and info then
+        return info.PriceInRobux
+    end
+    success, info = pcall(function()
+        return MarketplaceService:GetProductInfoAsync(DevProductId, Enum.InfoType.GamePass)
+    end)
+    if success and info then
+        return info.PriceInRobux
+    end
+    return nil
+end
 
 MarketplaceService.ProcessReceipt = DevproductPurchase
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(GamepassPurchase)
