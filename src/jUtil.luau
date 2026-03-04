@@ -549,6 +549,7 @@ function Util.Weld(a:PVInstance, b:PVInstance)
 	Weld.Part0 = a
 	Weld.Part1 = b
 	Weld.Parent = a
+	return Weld
 end
 
 return Util
