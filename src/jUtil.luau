@@ -543,13 +543,32 @@ end
 function Util.SecondsUntilTomorrow()
     return 86400 - (os.time() % 86400)
 end
-
-function Util.Weld(a:PVInstance, b:PVInstance)
+--[[
+	Weld a to b, parent weld to a and return the weld
+]]
+function Util.Weld(a:Instance, b:Instance)
 	local Weld = Instance.new("WeldConstraint")
 	Weld.Part0 = a
 	Weld.Part1 = b
 	Weld.Parent = a
 	return Weld
+end
+
+--[[
+	Iterate through ranges formatted as start:end
+	example:
+	Ranges("1:2 2:3 3:4") -> (1, 2), (2, 3), (3, 4)
+]]
+function Util.Ranges(str:string)
+    local iterator = string.gmatch(str, "(%d+):(%d+)")
+    
+    return function()
+        local startStr, endStr = iterator()
+        if startStr and endStr then
+            return tonumber(startStr), tonumber(endStr)
+        end
+        return nil
+    end
 end
 
 return Util
