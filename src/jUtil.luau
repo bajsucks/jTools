@@ -570,5 +570,42 @@ function Util.Ranges(str:string)
         return nil
     end
 end
+--[[
+	Binds a callback to run on a set frequency
+	sumdt - time delta accumulated since last call
+]]
+function Util.BindToHz(callback:(sumdt: number)->(), Hz:number)
+	local Interval = 1/Hz
+	local AccumulatedDt = 0
+	RunService.Heartbeat:Connect(function(dt)
+		AccumulatedDt += dt
+		if AccumulatedDt >= Interval then
+			callback(AccumulatedDt)
+			AccumulatedDt -= Interval
+		end
+	end)
+end
+--[[
+	Binds a callback to run every n-th fire of a RunService event
+	If Event is not provided, defaults to Heartbeat
+	sumdt - time delta accumulated through the frames
+]]
+function Util.BindToFrame(callback:(sumdt: number)->(), Frame:number, Event:string?)
+	Event = Event or "Heartbeat"
+	if not RunService[Event] then
+		error("Invalid RunService event!")
+	end
+	Frame = math.max(1, math.floor(Frame))
+	local AccumulatedFrames = 0
+	local AccumulatedDt = 0
+	RunService[Event]:Connect(function(dt)
+		AccumulatedDt += dt
+		AccumulatedFrames += 1
+		if AccumulatedFrames >= Frame then
+			callback(AccumulatedDt)
+			AccumulatedFrames, AccumulatedDt = 0, 0
+		end
+	end)
+end
 
 return Util
