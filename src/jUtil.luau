@@ -3,6 +3,9 @@ local ContentProvider = game:GetService("ContentProvider")
 local RunService = game:GetService('RunService')
 local Players = game:GetService("Players")
 local Janitor = require(script.Parent.Janitor)
+local t = require(script.Parent.t)
+
+local debug = false
 
 -- Object:IsA() but supports a table of types
 function Util.IsA(Obj:Object, Type:{string})
@@ -407,14 +410,9 @@ if RunService:IsClient() then
 	end
 end
 
--- boarding funnel wrapper (player, step, stepname)
---function Util.bfunnel(player, step, stepname) -- TODO DO NOT USE UNTIL MAKE THIS ONLY TRIGGER ONCE
---	AnalyticsService:LogOnboardingFunnelStepEvent(player, step, stepname)
---end
-
 --[[
-Returns player's friends on this server.
-If PlayerList is provided, will search that list instead.
+	Returns player's friends on this server.
+	If PlayerList is provided, will search that list instead.
 ]]
 function Util.GetFriendsOnServer(Player:Player, PlayerList:{Player}?)
 	local result = {}
@@ -426,11 +424,21 @@ function Util.GetFriendsOnServer(Player:Player, PlayerList:{Player}?)
 	return result
 end
 
+local checkGradientBar = t.tuple(t.userdata, t.table)
 --[[
-	This needs review
+	Creates hard color transitions in a UIGradient.
+	Useful for segmented progress bars
+	
+	@param gradient The UIGradient to modify.
+	@param intersects A list of {Color1: Color3, Color2: Color3, Intersect: number (0-1)} tables.
 ]]
-function Util.GradientBar(gradient, intersects)
-	--table.sort(intersects, function(a, b) return a.Intersect < b.Intersect end)
+function Util.GradientBar(gradient: UIGradient, intersects: {Color1: Color3, Color2: Color3, Intersect: number}): ()
+	if debug then
+		assert(checkGradientBar(gradient, intersects))
+	end
+	table.sort(intersects, function(a, b)	
+		return a.Intersect < b.Intersect
+	end)
 	local sequence = {}
 	for _, v in intersects do
 		local C1 = v.Color1
@@ -451,17 +459,16 @@ function Util.GradientBar(gradient, intersects)
 	end
 	gradient.Color = ColorSequence.new(sequence)
 end
+local checkTweenPivotTo = t.tuple(t.userdata, t.userdata, t.CFrame)
 --[[
 	Tween a model to a target CFrame;
 	This needs review
 ]]
 function Util.TweenPivotTo(PV:PVInstance, info:TweenInfo, targetcf:CFrame)
+	if debug then
+		assert(checkTweenPivotTo(PV, info, targetcf))
+	end
 	local TweenService = game:GetService("TweenService")
-	
-	if not PV:IsA("PVInstance") or typeof(info) ~= "TweenInfo" or typeof(targetcf) ~= "CFrame" then
-        error(`Invalid arguments provided for TweenModelCF! Types provided: {typeof(PV)}, {typeof(info)}, {typeof(targetcf)}`, 2)
-    end
-	
 	task.spawn(function()
 		local val = Instance.new("CFrameValue")
 		val.Value = PV:GetPivot()
@@ -474,10 +481,14 @@ function Util.TweenPivotTo(PV:PVInstance, info:TweenInfo, targetcf:CFrame)
 		con:Disconnect()
 	end)
 end
+local checkBulkPivotTo = t.tuple(t.table, t.table)
 --[[
 	workspace:BulkMoveTo, but accounts for pivot
 ]]
 function Util.BulkPivotTo(models:{PVInstance}, CFrames:{CFrame}, mode:Enum.BulkMoveMode)
+	if debug then
+		assert(checkBulkPivotTo(models, CFrames))
+	end
 	local newCFrames = {}
 	local newModels = {}
 	for i, v in models do
@@ -494,13 +505,16 @@ function Util.HasProperty(Obj:Instance, Property:string)
 	end)
 	return has
 end
+local checkResolvePath = t.tuple(t.union(t.table, t.userdata), t.string)
 --[[
 	Get an object from a table/instance using a path
 	Format: (PlayerData, "Inventory/Weapons/Weapon1")
 	Will return nil if path is invalid
 ]]
 function Util.ResolvePath(root:Instance|{[any]: any}, path: string): any?
-
+	if debug then
+		assert(checkResolvePath(root, path))
+	end
     local segments = string.split(path, "/")
     local current: any = root
 
@@ -521,11 +535,14 @@ function Util.ResolvePath(root:Instance|{[any]: any}, path: string): any?
 
     return current
 end
-
+local checkRandom = t.tuple(t.number, t.number)
 --[[
 	math.random() but safe-ish (way harder to bruteforce)
 ]]
 function Util.random(min:number, max:number)
+	if debug then
+		assert(checkRandom(min, max))
+	end
     local Unsafe = math.random(min, max*10*math.random(1, 10))
     return Util.WrapNumber(Unsafe, max)
 end
@@ -543,23 +560,31 @@ end
 function Util.SecondsUntilTomorrow()
     return 86400 - (os.time() % 86400)
 end
+
+local checkWeld = t.tuple(t.userdata, t.userdata)
 --[[
 	Weld a to b, parent weld to a and return the weld
 ]]
 function Util.Weld(a:Instance, b:Instance)
+	if debug then
+		assert(checkWeld(a, b))
+	end
 	local Weld = Instance.new("WeldConstraint")
 	Weld.Part0 = a
 	Weld.Part1 = b
 	Weld.Parent = a
 	return Weld
 end
-
---[[
+local checkRanges = t.string
+--[[]
 	Iterate through ranges formatted as start:end
 	example:
 	Ranges("1:2 2:3 3:4") -> (1, 2), (2, 3), (3, 4)
 ]]
 function Util.Ranges(str:string)
+	if debug then
+		assert(checkRanges(str))
+	end
     local iterator = string.gmatch(str, "(%d+):(%d+)")
     
     return function()
@@ -570,14 +595,23 @@ function Util.Ranges(str:string)
         return nil
     end
 end
+local checkBindToHz = t.tuple(t.callback, t.number)
 --[[
 	Binds a callback to run on a set frequency
 	sumdt - time delta accumulated since last call
+
+	@param Hz Hz > 1 < 60, whole number
+
+	@return Connection
 ]]
 function Util.BindToHz(callback:(sumdt: number)->(), Hz:number)
+	if debug then
+		assert(checkBindToHz(callback, Hz))
+	end
+	Hz = math.clamp(math.floor(Hz), 1, 60)
 	local Interval = 1/Hz
 	local AccumulatedDt = 0
-	RunService.Heartbeat:Connect(function(dt)
+	return RunService.Heartbeat:Connect(function(dt)
 		AccumulatedDt += dt
 		if AccumulatedDt >= Interval then
 			callback(AccumulatedDt)
@@ -585,12 +619,21 @@ function Util.BindToHz(callback:(sumdt: number)->(), Hz:number)
 		end
 	end)
 end
+local checkBindToFrame = t.tuple(t.callback, t.number, t.optional(t.string))
 --[[
 	Binds a callback to run every n-th fire of a RunService event
 	If Event is not provided, defaults to Heartbeat
 	sumdt - time delta accumulated through the frames
+
+	@param Frame >= 1, whole number, how many frames to wait
+	@param Event RunService event name, defaults to Heartbeat
+
+	@return Connection
 ]]
 function Util.BindToFrame(callback:(sumdt: number)->(), Frame:number, Event:string?)
+	if debug then
+		assert(checkBindToFrame(callback, Frame, Event))
+	end
 	Event = Event or "Heartbeat"
 	if not RunService[Event] then
 		error("Invalid RunService event!")
@@ -598,7 +641,7 @@ function Util.BindToFrame(callback:(sumdt: number)->(), Frame:number, Event:stri
 	Frame = math.max(1, math.floor(Frame))
 	local AccumulatedFrames = 0
 	local AccumulatedDt = 0
-	RunService[Event]:Connect(function(dt)
+	return RunService[Event]:Connect(function(dt)
 		AccumulatedDt += dt
 		AccumulatedFrames += 1
 		if AccumulatedFrames >= Frame then
