@@ -651,4 +651,16 @@ function Util.BindToFrame(callback:(sumdt: number)->(), Frame:number, Event:stri
 	end)
 end
 
+function Util.GetGUID(wrapInCurly:boolean?)
+	local HttpService = game:GetService("HttpService")
+	return HttpService:GenerateGUID(wrapInCurly)
+end
+
+--[[
+	Returns PlayerGui of local player
+]]
+function Util.GetLocalPlayerGui()
+	return Players.LocalPlayer.PlayerGui
+end
+
 return Util
