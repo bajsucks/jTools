@@ -9,8 +9,8 @@ local debug = false
 
 -- Object:IsA() but supports a table of types
 function Util.IsA(Obj:Object, Type:{string})
-	for _, t in Type do
-		if Obj:IsA(t) then
+	for _, T in Type do
+		if Obj:IsA(T) then
 			return true
 		end
 	end
@@ -69,8 +69,8 @@ end
 function Util.GetDescendantsWhichAre(Inst:Instance, Type:{string}) : {Instance} | {}
 	local res = {}
 	for _, v in Inst:GetDescendants() do
-		for _, t in Type do
-			if v:IsA(t) then
+		for _, T in Type do
+			if v:IsA(T) then
 				table.insert(res, v)
 				break
 			end
@@ -150,18 +150,18 @@ end
 	Debris but better
 	Minimum wait time - 1 frame
 ]]
-function Util.Debris(Inst:Instance|{Instance}, t:number)
-	if typeof(t) ~= "number" then
-        t = 0
+function Util.Debris(Inst:Instance|{Instance}, s:number)
+	if typeof(s) ~= "number" then
+        s = 0
     end
 	if typeof(Inst) == "table" then
 		for _, v in Inst do
-			task.delay(t, function()
+			task.delay(s, function()
                 v:Destroy()
             end)
 		end
 	elseif typeof(Inst) == "Instance" then
-		task.delay(t, function()
+		task.delay(s, function()
             Inst:Destroy()
         end)
 	else
@@ -200,10 +200,10 @@ end
 	I'm not sure if this works
 ]]
 function Util.Preload(List: {string})
-	local t, err = pcall(function()
+	local result, err = pcall(function()
 		ContentProvider:PreloadAsync(List)
 	end)
-	if not t then 
+	if not result then 
         error(err, 2)
     end
 end
@@ -233,35 +233,35 @@ end
 	Converts seconds to a readable format
 	@param format Available formats: 1 - XXd XXh XXm XXs, 2 - XX:XX:XX:XX Default: 1
 ]]
-function Util.SecondsToReadableTime(t:number, format:number?)
-	if not t then
+function Util.SecondsToReadableTime(s:number, format:number?): string
+	if not s then
         warn("Convert fail: No seconds were provided!")
         return
     end
 	format = format or 1
-	local days = math.floor(t/86400)
-	local hours = math.floor((t % 86400)/3600)
-	local minutes = math.floor(((t % 86400) % 3600)/60)
-	local seconds = math.floor((((t % 86400) % 3600)%60)/1)
+	local days = math.floor(s/86400)
+	local hours = math.floor((s % 86400)/3600)
+	local minutes = math.floor(((s % 86400) % 3600)/60)
+	local seconds = math.floor((((s % 86400) % 3600)%60)/1)
 	if format == 1 then
-		if t >= 86400 then
+		if s >= 86400 then
 			return string.format("%id %02ih %02im %02is", days, hours, minutes, seconds)
 		end
-		if t >= 3600 then
+		if s >= 3600 then
 			return string.format("%02ih %02im %02is", hours, minutes, seconds)
 		end
-		if t >= 60 then
+		if s >= 60 then
 			return string.format("%02im %02is", minutes, seconds)
 		end
 		return string.format("%02is", seconds)
 	else
-		if t >= 86400 then
+		if s >= 86400 then
 			return string.format("%i:%02i:%02i:%02i", days, hours, minutes, seconds)
 		end
-		if t >= 3600 then
+		if s >= 3600 then
 			return string.format("%02i:%02i:%02i", hours, minutes, seconds)
 		end
-		if t >= 60 then
+		if s >= 60 then
 			return string.format("%02i:%02i", minutes, seconds)
 		end
 		return string.format("%02i", seconds)
@@ -297,11 +297,11 @@ end
 	Randomizes indecies of a table
 	Probably not entirely random
 ]]
-function Util.ShuffleTable(t: {})
+function Util.ShuffleTable(tbl: {})
 	local r = Random.new()
-    for i = #t, 2, -1 do
+    for i = #tbl, 2, -1 do
         local j = r:NextInteger(1, i)
-        t[i], t[j] = t[j], t[i]
+        tbl[i], tbl[j] = tbl[j], tbl[i]
     end
 end
 
