@@ -7,21 +7,21 @@ local GeneralChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild
 local module = {}
 
 -- color in hex
-function module.SendTagMessage(Message:string, tag:string?, tagcolor:string?)
+function module.SendTagMessage(Message: string, tag: string?, tagcolor: string?)
 	tagcolor = tagcolor or "#fbff0a"
 	if tag then
-		GeneralChannel:DisplaySystemMessage(`<font color='{tagcolor}'>[{tag}]</font> {Message}`) 
+		GeneralChannel:DisplaySystemMessage(`<font color='{tagcolor}'>[{tag}]</font> {Message}`)
 	else
-		GeneralChannel:DisplaySystemMessage(Message) 
+		GeneralChannel:DisplaySystemMessage(Message)
 	end
 end
 
-function module.SendMessage(Message:string)
-	GeneralChannel:DisplaySystemMessage(Message) 
+function module.SendMessage(Message: string)
+	GeneralChannel:DisplaySystemMessage(Message)
 end
 
 -- returns the message with an appended tag
-function module.AppendTag(Message:string, tag:string?, tagcolor:string?)
+function module.AppendTag(Message: string, tag: string?, tagcolor: string?)
 	return `<font color='{tagcolor}'>[{tag}]</font> {Message}`
 end
 

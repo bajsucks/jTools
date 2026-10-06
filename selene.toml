@@ -1,4 +1,8 @@
 std = "roblox"
+exclude = ["Packages/*", "src/t.luau", "src/spr.luau"]
 
 [lints]
-shadowing = "allow"
+multiple_statements = "allow"
+shadowing = "warn"
+unused_variable = "warn"
+global_usage = "allow"

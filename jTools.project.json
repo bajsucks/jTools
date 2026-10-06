@@ -1,9 +1,0 @@
-{
-  "name": "jTools",
-  "tree": {
-    "$path": "src",
-    "Lootbag": {
-      "$path": "Submodules/Lootbag/src"
-    }
-  }
-}
