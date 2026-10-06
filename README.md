@@ -6,7 +6,7 @@ However, if you want to, you can use it too
 ## Install
 Add this line under wally.toml dependencies and run `wally install`:
 
-`jtools = "bajsucks/jtools@*"`
+`jTools = "bajsucks/jtools@*"`
 
 ### thanks
 Thanks [Fraktality](https://github.com/Fraktality) for your absolutely georgeous [spr module](https://github.com/Fraktality/spr)
