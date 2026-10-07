@@ -17,20 +17,7 @@
 
 
 ]]
-local jTools = {}
-
-for _, v in script:GetChildren() do
-	local success, e = pcall(function()
-		return require(v)
-	end)
-	if success then
-		jTools[v.Name] = e
-	else
-		print("jTools module", v, "failed to load! Error message:", e)
-	end
-end
-
-return jTools :: typeof({
+local jTools: typeof({
 	Badges = require(script.Badges),
 	Cashier = require(script.Cashier),
 	Crumbs = require(script.Crumbs),
@@ -48,4 +35,18 @@ return jTools :: typeof({
 	spr = require(script.spr),
 	t = require(script.t),
 	Waiter = require(script.Waiter),
-})
+}) =
+	{}
+
+for _, v in script:GetChildren() do
+	local success, e = pcall(function()
+		return require(v)
+	end)
+	if success then
+		jTools[v.Name] = e
+	else
+		print("jTools module", v, "failed to load! Error message:", e)
+	end
+end
+
+return jTools

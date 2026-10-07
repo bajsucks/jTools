@@ -1,10 +1,10 @@
 local BadgeService = game:GetService("BadgeService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-if RunService:IsClient() then
-	return {}
-end
 local Badges = {}
+if RunService:IsClient() then
+	return Badges
+end
 
 local cache = {}
 
