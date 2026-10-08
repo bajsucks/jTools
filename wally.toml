@@ -4,7 +4,7 @@ description = "A collection of tools made to ease Roblox development"
 license = "MIT"
 authors = ["baj"]
 repository = "https://github.com/bajsucks/jTools"
-version = "0.1.4"
+version = "0.2.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
