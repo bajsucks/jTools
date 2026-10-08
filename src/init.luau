@@ -20,7 +20,6 @@ local jTools: typeof({
 	Badges = require(script.Badges),
 	Cashier = require(script.Cashier),
 	Crumbs = require(script.Crumbs),
-	GridUtil = require(script.GridUtil),
 	Haptic = require(script.Haptic),
 	jChat = require(script.jChat),
 	jMath = require(script.jMath),
