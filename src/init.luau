@@ -15,7 +15,6 @@
 ░░██████                                              
  ░░░░░░                                               
 
-
 ]]
 local jTools: typeof({
 	Badges = require(script.Badges),
@@ -34,7 +33,6 @@ local jTools: typeof({
 	SocialTrickery = require(script.SocialTrickery),
 	spr = require(script.spr),
 	t = require(script.t),
-	Waiter = require(script.Waiter),
 }) =
 	{}
 
