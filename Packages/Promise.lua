@@ -1,4 +1,4 @@
-local REQUIRED_MODULE = require(script.Parent.Parent["howmanysmall_typed-promise@4.0.6"]["typed-promise"])
+local REQUIRED_MODULE = require(script.Parent._Index["howmanysmall_typed-promise@4.0.6"]["typed-promise"])
 export type Status = REQUIRED_MODULE.Status 
 export type ErrorKind = REQUIRED_MODULE.ErrorKind 
 export type Error = REQUIRED_MODULE.Error 
