@@ -16,9 +16,10 @@ function Badges.Give(Player: Player, BadgeID: number)
 	if cache[Player][BadgeID] then
 		return
 	end
+	cache[Player][BadgeID] = true
 	local success = pcall(BadgeService.AwardBadgeAsync, BadgeService, Player.UserId, BadgeID)
-	if success then
-		cache[Player][BadgeID] = true
+	if not success then
+		cache[Player][BadgeID] = false
 	end
 end
 

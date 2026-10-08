@@ -4,6 +4,7 @@
 ]]
 local module = {}
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 --[[
     Beware of the API limit!
@@ -72,6 +73,20 @@ function module.IsFriends(Player: Player, UserId: number)
 		return true
 	end
 	return false
+end
+
+--[[
+	Returns player's friends on this server.
+	If PlayerList is provided, will search that list instead.
+]]
+function module.GetFriendsOnServer(Player: Player, PlayerList: { Player }?)
+	local result = {}
+	for _, p in (PlayerList and PlayerList or Players:GetPlayers()) do
+		if Player:IsFriendsWithAsync(p.UserId) then
+			table.insert(result, p)
+		end
+	end
+	return result
 end
 
 return module
