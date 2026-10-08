@@ -2,7 +2,7 @@ local Util = {}
 local ContentProvider = game:GetService("ContentProvider")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local Janitor = require(script.Parent.Janitor)
+local Janitor = require(script.Parent.Parent.Janitor)
 
 -- Object:IsA() but supports a table of types
 function Util.IsA(Obj: Object, Type: { string })
