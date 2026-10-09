@@ -15,5 +15,5 @@
   "name": "jtools",
   "platform": "roblox",
   "root": "src/init.luau",
-  "version": "0.2.2"
+  "version": "0.2.3"
 }
