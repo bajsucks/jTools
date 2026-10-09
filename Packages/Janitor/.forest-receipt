@@ -1,0 +1,7 @@
+{
+  "name": "howmanysmall/janitor",
+  "version": "1.18.3",
+  "integrity": "b40b7414775a58ccbf3f8ecdbced9c26afd64e5582d2564175fa3062f9669d88",
+  "root": "janitor/init.lua",
+  "container": "Packages"
+}

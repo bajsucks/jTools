@@ -13,7 +13,7 @@ Playlist.__index = Playlist
 local SoundService = game:GetService("SoundService")
 local folder = workspace:FindFirstChild("jSounds") -- This folder will be used for temp instances in jSound.LocalSFX
 
-local Janitor = require(script.Parent.Parent.Janitor)
+local Janitor = require(script.Parent.Packages.Janitor)
 local Pool = require(script.Parent.Pool)
 local jUtil = require(script.Parent.jUtil)
 

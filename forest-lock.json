@@ -1,0 +1,45 @@
+{
+  "file_version": 2,
+  "packages": {
+    "evaera/promise": [
+      {
+        "dependencies": {},
+        "integrity": "b7ee0f4d28ba123bcb8beb29404521ce39d61533e5490212be31adefdbadcd9e",
+        "location": "~/Promise",
+        "public": true,
+        "root": "lib/init.lua",
+        "version": "4.0.0"
+      }
+    ],
+    "howmanysmall/janitor": [
+      {
+        "dependencies": {
+          "howmanysmall/typed-promise": {
+            "alias": "Promise",
+            "version": "4.0.6"
+          }
+        },
+        "integrity": "b40b7414775a58ccbf3f8ecdbced9c26afd64e5582d2564175fa3062f9669d88",
+        "location": "~",
+        "public": true,
+        "root": "janitor/init.lua",
+        "version": "1.18.3"
+      }
+    ],
+    "howmanysmall/typed-promise": [
+      {
+        "dependencies": {
+          "evaera/promise": {
+            "alias": "Promise",
+            "version": "4.0.0"
+          }
+        },
+        "integrity": "e04be1e114f5418c9cd258a6c8f29a7e62aab19dad75555228245738b8f1e99c",
+        "location": "~",
+        "public": true,
+        "root": "typed-promise/init.lua",
+        "version": "4.0.6"
+      }
+    ]
+  }
+}

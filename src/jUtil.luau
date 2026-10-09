@@ -15,8 +15,8 @@ if RunService:IsClient() then
 	UserInputService = game:GetService("UserInputService")
 	AvatarEditorService = game:GetService("AvatarEditorService")
 end
-local Janitor = require(script.Parent.Parent.Janitor)
-local Promise = require(script.Parent.Parent.Promise)
+local Janitor = require(script.Parent.Packages.Janitor)
+local Promise = require(script.Parent.Packages.Promise)
 
 type Recursive<T> = T | { Recursive<T> }
 type dict<T> = { [any]: T }

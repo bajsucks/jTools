@@ -1,0 +1,7 @@
+{
+  "name": "howmanysmall/typed-promise",
+  "version": "4.0.6",
+  "integrity": "e04be1e114f5418c9cd258a6c8f29a7e62aab19dad75555228245738b8f1e99c",
+  "root": "typed-promise/init.lua",
+  "container": "Packages"
+}

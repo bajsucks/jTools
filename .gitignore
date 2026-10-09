@@ -2,3 +2,4 @@ sourcemap.json
 *.rbxm
 *.rbxmx
 *.lock
+.forest/

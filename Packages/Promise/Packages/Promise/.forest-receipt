@@ -1,0 +1,7 @@
+{
+  "name": "evaera/promise",
+  "version": "4.0.0",
+  "integrity": "b7ee0f4d28ba123bcb8beb29404521ce39d61533e5490212be31adefdbadcd9e",
+  "root": "lib/init.lua",
+  "container": "Packages"
+}

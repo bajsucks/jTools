@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "howmanysmall/janitor": {
+      "alias": "Janitor",
+      "version": "^1.18.3"
+    },
+    "howmanysmall/typed-promise": {
+      "alias": "Promise",
+      "version": "^4.0.6"
+    }
+  },
+  "license": "MIT",
+  "name": "jtools",
+  "platform": "roblox",
+  "version": "0.2.1"
+}

@@ -1,6 +1,9 @@
 {
   "name": "jtools",
   "tree": {
-    "$path": "src"
+    "$path": "src",
+    "Packages": {
+      "$path": "Packages"
+    }
   }
 }
