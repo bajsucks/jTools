@@ -1,0 +1,14 @@
+{
+  "name": "jtools",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "Packages",
+        "jtools": {
+          "$path": "src"
+        }
+      }
+    }
+  }
+}
