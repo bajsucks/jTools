@@ -4,9 +4,13 @@ For it is an internal tool, and for it is only meant to be used by me and the pe
 However, if you want to, you can use it too
 
 ## Install
-Add this line under wally.toml dependencies and run `wally install`:
+### Forest
+`forest i bajsucks/jtools`
 
-`jTools = "bajsucks/jtools@^0.2.0"`
+### Wally
+Wally package is deprecated, but an older version of jTools exists on the index:
+
+`jTools = "bajsucks/jtools@0.2.0"`
 
 ### thanks
 Thanks [Fraktality](https://github.com/Fraktality) for your absolutely georgeous [spr module](https://github.com/Fraktality/spr)
