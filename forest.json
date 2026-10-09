@@ -1,4 +1,5 @@
 {
+  "author": "bajsucks",
   "dependencies": {
     "howmanysmall/janitor": {
       "alias": "Janitor",
@@ -9,8 +10,10 @@
       "version": "^4.0.6"
     }
   },
+  "description": "A collection of various tools I find useful in development",
   "license": "MIT",
   "name": "jtools",
   "platform": "roblox",
-  "version": "0.2.1"
+  "root": "src/init.luau",
+  "version": "0.2.2"
 }
