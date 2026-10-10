@@ -36,13 +36,16 @@ local jTools: typeof({
 	{}
 
 for _, v in script:GetChildren() do
+	if not v:IsA("ModuleScript") then
+		continue
+	end
 	local success, e = pcall(function()
 		return require(v)
 	end)
 	if success then
 		jTools[v.Name] = e
 	else
-		print("jTools module", v, "failed to load! Error message:", e)
+		warn("jTools module", v, "failed to load! Error message:", e)
 	end
 end
 
