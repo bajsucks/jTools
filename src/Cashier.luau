@@ -15,6 +15,7 @@ end -- server-only tool!
 
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
+local jUtil = require(script.Parent.jUtil)
 local t = require(script.Parent.t)
 
 local Register = {}
@@ -194,7 +195,10 @@ function Cashier.GetProductPrice(DevProductId: number)
 	return nil
 end
 
-MarketplaceService.ProcessReceipt = DevproductPurchase
-MarketplaceService.PromptGamePassPurchaseFinished:Connect(GamepassPurchase)
+-- Headless runs don't have ProcessReceipt, so we check it to avoid a jTools require warn in those runs
+if jUtil.HasProperty(MarketplaceService, "ProcessReceipt") then
+	MarketplaceService.ProcessReceipt = DevproductPurchase
+	MarketplaceService.PromptGamePassPurchaseFinished:Connect(GamepassPurchase)
+end
 
 return Cashier

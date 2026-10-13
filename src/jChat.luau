@@ -2,7 +2,21 @@
 	Add tags to messages and display system messages
 ]]
 local TextChatService = game:GetService("TextChatService")
-local GeneralChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+local _, TextChannels = pcall(function()
+	return TextChatService:WaitForChild("TextChannels", 1)
+end)
+if not TextChannels then
+	-- Headless run
+	local fn = function() end
+	return {
+		SendTagMessage = fn,
+		SendMessage = fn,
+		AppendTag = fn,
+	}
+else
+	warn("Got textchannel")
+end
+local GeneralChannel = TextChannels:FindFirstChild("RBXGeneral")
 
 local module = {}
 
