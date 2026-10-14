@@ -13,8 +13,6 @@ if not TextChannels then
 		SendMessage = fn,
 		AppendTag = fn,
 	}
-else
-	warn("Got textchannel")
 end
 local GeneralChannel = TextChannels:FindFirstChild("RBXGeneral")
 
