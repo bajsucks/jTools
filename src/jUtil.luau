@@ -549,4 +549,22 @@ function Util.WeakTbl()
 	return setmetatable({}, { __mode = "k" })
 end
 
+function Util.DictEquals<T>(a: dict<T>, b: dict<T>)
+	if a == b then
+		return true
+	end
+	if type(a) ~= "table" or type(b) ~= "table" then
+		return false
+	end
+	local aCount = 0
+	for i, v in a do
+		local other = b[i]
+		if other == nil or not Util.DictEquals(v, other) then
+			return false
+		end
+		aCount += 1
+	end
+	return aCount == Util.DictCount(b)
+end
+
 return Util
