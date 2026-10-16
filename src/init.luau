@@ -32,6 +32,7 @@ local jTools: typeof({
 	SocialTrickery = require(script.SocialTrickery),
 	spr = require(script.spr),
 	t = require(script.t),
+	Memo = require(script.Memo),
 }) =
 	{}
 
