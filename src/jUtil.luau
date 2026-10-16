@@ -542,4 +542,11 @@ function Util.BindToHz(Hz: number, fn: () -> ())
 	end)
 end
 
+--[[
+	Returns a new weak table
+]]
+function Util.WeakTbl()
+	return setmetatable({}, { __mode = "k" })
+end
+
 return Util
