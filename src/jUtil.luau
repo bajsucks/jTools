@@ -358,50 +358,52 @@ function Util.PromptAddGameToFavorites()
 	AvatarEditorService:PromptSetFavorite(game.PlaceId, Enum.AvatarItemType.Asset, true)
 end
 
-if RunService:IsClient() then
+--[[
+	[CLIENT]
+	Disable reset on the client
+]]
+function Util.ClientDisableReset()
+	return Promise.retryWithDelay(function()
+		return Promise.try(StarterGui.SetCore, StarterGui, "ResetButtonCallback", false)
+	end, 8, 0.1)
+end
 
-	--[[
-		Disable reset on the client
-	]]
-	function Util.ClientDisableReset()
-		return Promise.retryWithDelay(function()
-			return Promise.try(StarterGui.SetCore, StarterGui, "ResetButtonCallback", false)
-		end, 8, 0.1)
+--[[
+	[CLIENT]
+	Switch player controls on/off
+]]
+function Util.ChangeControls(state: boolean)
+	local LocalPlayer = Players.LocalPlayer
+	local Controls = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls()
+	if state then
+		Controls:Enable()
+	else
+		Controls:Disable()
 	end
+end
 
-	--[[
-		Switch player controls on/off
-	]]
-	function Util.ChangeControls(state: boolean)
-		local LocalPlayer = Players.LocalPlayer
-		local Controls = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls()
-		if state then
-			Controls:Enable()
-		else
-			Controls:Disable()
-		end
-	end
+--[[
+	[CLIENT]
+	Returns UserInputService.MouseEnabled
+]]
+function Util.HasMouse()
+	return UserInputService.MouseEnabled
+end
 
-	--[[
-		Returns UserInputService.MouseEnabled
-	]]
-	function Util.HasMouse()
-		return UserInputService.MouseEnabled
-	end
+--[[
+	[CLIENT]
+	Returns UserInputService.PreferredInput
+]]
+function Util.GetPreferredInput()
+	return UserInputService.PreferredInput
+end
 
-	--[[
-		Returns UserInputService.PreferredInput
-	]]
-	function Util.GetPreferredInput()
-		return UserInputService.PreferredInput
-	end
-
-	--[[
-		Sets leaderboard (player list) CoreGUI on/off
-	]]
-	function Util.PlayerList(state: boolean)
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, state)
-	end
+--[[
+	[CLIENT]
+	Sets leaderboard (player list) CoreGUI on/off
+]]
+function Util.PlayerList(state: boolean)
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, state)
 end
 
 --[[
