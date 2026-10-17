@@ -254,6 +254,8 @@ end
 --[[
 	Converts seconds to a readable format
 	@param format Available formats: 1 - XXd XXh XXm XXs, 2 - XX:XX:XX:XX Default: 1
+
+	@deprecated Superseded by .FormatTime()
 ]]
 function Util.SecondsToReadableTime(t: number, format: number?): string
 	if not t then
@@ -288,6 +290,57 @@ function Util.SecondsToReadableTime(t: number, format: number?): string
 		return string.format("%02i", seconds)
 	end
 end
+
+local UNITS = { { "y", 31536000 }, { "w", 604800 }, { "d", 86400 }, { "h", 3600 }, { "m", 60 }, { "s", 1 } }
+local function pattern(unit: string): string
+	return "{(" .. unit .. unit .. "?)}"
+end
+local function largestUnit(format: string): number
+	for _, unit in UNITS do
+		if format:find(pattern(unit[1])) then
+			return unit[2]
+		end
+	end
+	return math.huge
+end
+--[[
+	Converts seconds into readable strings.
+	@param Sec Seconds to convert
+	@param ... String templates
+
+	Tokens: {y}, {w}, {d}, {h}, {m}, {s}
+
+	Double token for zero-pad e.g. {hh}
+
+	The first template is used as the fallback, so order your formats from smallest to largest.
+
+	`.FormatTime(65, "{s}s", "{m}m {ss}s") -> "1m 05s"`
+
+	`.FormatTime(90000, "{h}h", "{d}d {h}h") -> "1d 1h"`
+]]
+function Util.FormatTime(Sec: number, ...: string): string
+	local formats = { ... }
+	local Format, threshold = formats[1], 0
+	for _, overflow in formats do
+		local size = largestUnit(overflow)
+		if Sec >= size and size > threshold then
+			Format, threshold = overflow, size
+		end
+	end
+	for _, unit in UNITS do
+		local size = unit[2]
+		local value = Sec // size
+		local count
+		Format, count = Format:gsub(pattern(unit[1]), function(token)
+			return if #token == 2 then string.format("%02d", value) else tostring(value)
+		end)
+		if count > 0 then
+			Sec %= size
+		end
+	end
+	return Format
+end
+
 --[[
 	@deprecated alias of .IsDictEmpty()
 ]]
