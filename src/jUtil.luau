@@ -19,7 +19,7 @@ local Janitor = require(script.Parent.Packages.Janitor)
 local Promise = require(script.Parent.Packages.Promise)
 
 type Recursive<T> = T | { Recursive<T> }
-type dict<T> = { [any]: T }
+type dict<K, V> = { [K]: V }
 type tbl<T> = { [number]: T }
 type Types = { string }
 
@@ -92,7 +92,7 @@ function Util.ClearGUI(Inst: Instance)
 	Util.ClearChildrenExcept(Inst, { "UIComponent" })
 end
 
-function Util.DictHasValue<T>(dict: dict<T>, value: T): boolean
+function Util.DictHasValue<K, V>(dict: dict<K, V>, value: V): boolean
 	for _, v in dict do
 		if v == value then
 			return true
@@ -103,7 +103,7 @@ end
 --[[
 	Returns the number of indecies in a dictionary, or 0 if empty
 ]]
-function Util.DictCount<T>(dict: dict<T>): number
+function Util.DictCount<K, V>(dict: dict<K, V>): number
 	if not dict or typeof(dict) ~= "table" then
 		return 0
 	end
@@ -117,7 +117,7 @@ end
 	Gets a random index from the given dictionary.
 	Uses `math.random()` to select the random.
 ]]
-function Util.RandFromDict<T>(dict: dict<T>): T
+function Util.RandFromdict<K, V>(dict: dict<K, V>): V
 	local dc = Util.DictCount(dict)
 	if dc == 0 then
 		return
@@ -344,32 +344,33 @@ end
 --[[
 	@deprecated alias of .IsDictEmpty()
 ]]
-function Util.IsTableEmpty(dict: dict<any>): boolean
+function Util.IsTableEmpty<K, V>(dict: dict<K, V>): boolean
 	Util.IsDictEmpty(dict) -- not direct assignment because we need the big fat deprecated sign
 end
 
 --[[
 	Returns whether a dict is empty
 ]]
-function Util.IsDictEmpty<T>(dict: dict<T>): boolean
+function Util.IsDictEmpty<K, V>(dict: dict<K, V>): boolean
 	for _ in dict do
 		return false
 	end
 	return true
 end
+
 --[[
 	Clone a table/dict and returns the clone.
 	Does not support recursion!
 ]]
-function Util.deepClone<T>(dict: dict<T>): dict<T>
+function Util.deepClone<T>(dict: T): T
 	if typeof(dict) ~= "table" then
 		return dict
 	end
 	local clone = {}
-	for key, value in dict do
-		clone[key] = Util.deepClone(value)
+	for k, v: any in dict :: any do
+		clone[k] = Util.deepClone(v)
 	end
-	return clone
+	return clone :: any
 end
 
 --[[
@@ -509,10 +510,10 @@ end
 	Format: (PlayerData, "Inventory/Weapons/Weapon1")
 	Will return nil if path is invalid
 ]]
-function Util.ResolvePath(root: Instance | dict<any>, path: string, sep: string?): any?
+function Util.ResolvePath(root: Instance | dict<any, any>, path: string, sep: string?): any?
 
 	local segments = string.split(path, sep or "/")
-	local current: Instance | dict<any> = root
+	local current: Instance | dict<any, any> = root
 
 	for _, segment in segments do
 		if type(current) == "table" then
@@ -602,7 +603,7 @@ function Util.WeakTbl()
 	return setmetatable({}, { __mode = "k" })
 end
 
-function Util.DictEquals<T>(a: dict<T>, b: dict<T>)
+function Util.DictEquals<K, V>(a: dict<K, V>, b: dict<K, V>)
 	if a == b then
 		return true
 	end
