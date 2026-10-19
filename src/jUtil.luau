@@ -117,7 +117,7 @@ end
 	Gets a random index from the given dictionary.
 	Uses `math.random()` to select the random.
 ]]
-function Util.RandFromdict<K, V>(dict: dict<K, V>): V
+function Util.RandFromDict<K, V>(dict: dict<K, V>): V
 	local dc = Util.DictCount(dict)
 	if dc == 0 then
 		return
