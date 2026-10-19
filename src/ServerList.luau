@@ -16,6 +16,7 @@ export type Server = {
 	country: string,
 	region_name: string,
 	city: string,
+	startTime: number,
 	v: number, -- version
 }
 
@@ -65,6 +66,7 @@ local ours = {
 	region_name = "Unknown",
 	city = "Unknown",
 	v = VERSION,
+	startTime = workspace:GetServerTimeNow(),
 }
 
 local pendingSet: Promise.Promise?
