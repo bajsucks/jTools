@@ -7,11 +7,6 @@ However, if you want to, you can use it too
 ### Forest
 `forest i bajsucks/jtools`
 
-### Wally
-Wally package is deprecated, but an older version of jTools exists on the index:
-
-`jTools = "bajsucks/jtools@0.2.0"`
-
 ### thanks
 Thanks [Fraktality](https://github.com/Fraktality) for your absolutely georgeous [spr module](https://github.com/Fraktality/spr)
 
