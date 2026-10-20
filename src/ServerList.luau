@@ -66,7 +66,7 @@ local ours = {
 	region_name = "Unknown",
 	city = "Unknown",
 	v = VERSION,
-	startTime = workspace:GetServerTimeNow(),
+	startTime = DateTime.now().UnixTimestamp,
 }
 
 local pendingSet: Promise.Promise?
