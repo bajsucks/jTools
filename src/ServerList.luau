@@ -20,7 +20,7 @@ export type Server = {
 	v: number, -- version
 }
 
-if RunService:IsClient() then
+if RunService:IsClient() or not jUtil.HasProperty(MemoryStoreService, "GetSortedMap") then
 	return ServerList
 end -- server only
 
