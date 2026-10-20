@@ -34,6 +34,7 @@ local jTools: typeof({
 	t = require(script.t),
 	Memo = require(script.Memo),
 	ServerList = require(script.ServerList),
+	Juice = require(script.Juice),
 }) =
 	{}
 
