@@ -269,4 +269,8 @@ function ServerList.Self(): Server
 	return us
 end
 
+function ServerList.GetByJobId(Job: string): Server?
+	return serverMap:GetAsync(Job)
+end
+
 return ServerList
