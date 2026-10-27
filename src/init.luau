@@ -21,7 +21,6 @@ local jTools: typeof({
 	Cashier = require(script.Cashier),
 	Crumbs = require(script.Crumbs),
 	Haptic = require(script.Haptic),
-	jChat = require(script.jChat),
 	jMath = require(script.jMath),
 	jSound = require(script.jSound),
 	jUtil = require(script.jUtil),
