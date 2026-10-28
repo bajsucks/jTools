@@ -620,5 +620,16 @@ function Util.DictEquals<K, V>(a: dict<K, V>, b: dict<K, V>)
 	end
 	return aCount == Util.DictCount(b)
 end
+--[[
+	Color3 -> Hex
+]]
+function Util.Hex(Color3: Color3): string
+	return string.format(
+		"#%02X%02X%02X",
+		math.round(Color3.R * 255),
+		math.round(Color3.G * 255),
+		math.round(Color3.B * 255)
+	)
+end
 
 return Util
