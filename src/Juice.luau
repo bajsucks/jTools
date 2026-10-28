@@ -16,10 +16,12 @@ function Juice.AutoscaleScroll(sf: ScrollingFrame, Axis: "X" | "Y" | "XY"): () -
 		warn("AutoscaleScroll can only be used on ScrollingFrames with a UIListLayout child!")
 		return function() end
 	end
-	local con = layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	local function Update()
 		local s = layout.AbsoluteContentSize
 		sf.CanvasSize = UDim2.fromOffset(Axis:find("X") and s.X or 0, Axis:find("Y") and s.Y or 0)
-	end)
+	end
+	local con = layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(Update)
+	Update()
 	return function()
 		con:Disconnect()
 	end
