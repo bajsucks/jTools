@@ -620,6 +620,7 @@ function Util.DictEquals<K, V>(a: dict<K, V>, b: dict<K, V>)
 	end
 	return aCount == Util.DictCount(b)
 end
+
 --[[
 	Color3 -> Hex
 ]]
@@ -630,6 +631,26 @@ function Util.Hex(Color3: Color3): string
 		math.round(Color3.G * 255),
 		math.round(Color3.B * 255)
 	)
+end
+
+--[[
+	Formats a number as comma separated
+	123456 -> 123,456
+]]
+function Util.Commas(n: number): string
+	local str = string.format("%.0f", n)
+	local count
+	repeat
+		str, count = string.gsub(str, "^(-?%d+)(%d%d%d)", "%1,%2")
+	until count == 0
+	return str
+end
+
+--[[
+	Returns the count of characters in a num/str
+]]
+function Util.Chars(n: number | string)
+	return typeof(n) == "number" and #string.format("%.0f", math.abs(n)) or #n
 end
 
 return Util
