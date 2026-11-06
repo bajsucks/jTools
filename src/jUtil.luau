@@ -454,6 +454,23 @@ end
 
 --[[
 	[CLIENT]
+	Binds a function to run when UserInputService.PreferredInput changes.
+
+	@return Cancel
+]]
+function Util.PreferredInputChanged(fn: (PreferredInput: Enum.PreferredInput) -> ()): () -> ()
+	fn(UserInputService.PreferredInput)
+
+	local con = UserInputService:GetPropertyChangedSignal("PreferredInput"):Connect(function()
+		fn(UserInputService.PreferredInput)
+	end)
+	return function()
+		con:Disconnect()
+	end
+end
+
+--[[
+	[CLIENT]
 	Sets leaderboard (player list) CoreGUI on/off
 ]]
 function Util.PlayerList(state: boolean)
