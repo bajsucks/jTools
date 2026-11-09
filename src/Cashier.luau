@@ -1,3 +1,4 @@
+--!strict
 --[[
     This module handles dev products & gamepasses
     
@@ -18,9 +19,12 @@ local Players = game:GetService("Players")
 local jUtil = require(script.Parent.jUtil)
 local t = require(script.Parent.t)
 
-local Register = {}
+type OnPurchase = (Player) -> boolean
+type OnReapply = (Player) -> ()
+
+local Register: { [string]: { Id: number, OnPurchase: OnPurchase?, OnReapply: OnReapply? } } = {}
 local cache: { [Player]: { [string]: boolean } } = {} -- [Player] = { [label]: boolean }
-local GamepassLabels: { number | string } = {} -- [1]: Id, [2]: label
+local GamepassLabels: { { number | string } } = {} -- [1]: Id, [2]: label
 
 local function GetCache(Player: Player)
 	local PlayerCache = cache[Player]
@@ -37,8 +41,9 @@ end)
 
 local function GetLabelFromId(Id: number): string
 	for _, v in GamepassLabels do
-		if v[1] == Id then
-			return v[2]
+		local vid, vlabel = v[1] :: number, v[2] :: string
+		if vid == Id then
+			return vlabel
 		end
 	end
 	error("Tried to get a label that was not yet defined!")
@@ -46,8 +51,9 @@ end
 
 local function GetIdFromLabel(label: string): number
 	for _, v in GamepassLabels do
-		if v[2] == label then
-			return v[1]
+		local vid, vlabel = v[1] :: number, v[2] :: string
+		if vlabel == label then
+			return vid
 		end
 	end
 	error("Tried to get an ID that was not yet defined!")
@@ -102,7 +108,7 @@ end
     Binds a function to when a dev product is purchased
     OnPurchase returns success
 ]]
-function Cashier.AddProduct(ProductId: number, OnPurchase: (Player) -> boolean)
+function Cashier.AddProduct(ProductId: number, OnPurchase: OnPurchase)
 	local c = t.tuple(t.number, t.callback)
 	assert(c(ProductId, OnPurchase))
 	Register[tostring(ProductId)] = {
@@ -114,8 +120,8 @@ end
     Binds a function to when a gamepass is purchased, and a second function that allows to easily repeat some action associated with that gamepass.
     Also provides a label alias for that pass
 ]]
-function Cashier.AddPass(GamepassId: number, label: string, OnReapply: (Player) -> ()?, OnPurchase: (Player) -> ()?)
-	local c = t.tuple(t.number, t.string, t.optional(t.callback), t.optional(t.callback))
+function Cashier.AddPass(GamepassId: number, label: string, OnReapply: OnReapply?, OnPurchase: OnPurchase?)
+	local c = t.tuple(t.number, t.string, t.optional(t.callback :: any), t.optional(t.callback :: any))
 	assert(c(GamepassId, OnReapply, label, OnPurchase))
 	table.insert(GamepassLabels, { GamepassId, label })
 	Register[tostring(GamepassId)] = {
@@ -163,7 +169,8 @@ end
 ]]
 function Cashier.ReapplyAll(Player: Player)
 	for _, v in GamepassLabels do
-		Cashier.Reapply(Player, v[2])
+		local vlabel = v[2] :: string
+		Cashier.Reapply(Player, vlabel)
 	end
 end
 --[[
