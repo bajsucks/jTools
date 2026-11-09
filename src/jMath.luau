@@ -1,7 +1,8 @@
+--!native
+--!strict
 --[[
 	Cool math functions
 ]]
---!strict
 
 local Math = {}
 --[[
