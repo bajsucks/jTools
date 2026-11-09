@@ -76,12 +76,22 @@ function Math.IsWithinRadius(a: Vector3, b: Vector3, Radius: number): boolean
 end
 
 --[[
-	Fast calculation
+	Gets the magnitude^2 of two vector3s very fast
 ]]
-function Math.GetDistanceSquared(a: Vector3, b: Vector3): number
+function Math.MagSqr(a: Vector3, b: Vector3): number
 	local dx, dy, dz = a.X - b.X, a.Y - b.Y, a.Z - b.Z
 	return dx * dx + dy * dy + dz * dz -- a*a is faster than a^2 by ~3% btw
 end
+Math.GetDistanceSquared = Math.MagSqr
+
+--[[
+	Gets the magnitude^2 of two vector2s very fast
+]]
+function Math.MagSqr2d(a: Vector2, b: Vector2): number
+	local dx, dy = a.X - b.X, a.Y - b.Y
+	return dx * dx + dy * dy
+end
+
 --[[
 	Returns a median of all numbers in a table
 	Table indecies must not have gaps
