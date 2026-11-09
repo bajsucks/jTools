@@ -79,8 +79,8 @@ end
 	Fast calculation
 ]]
 function Math.GetDistanceSquared(a: Vector3, b: Vector3): number
-	local d = a - b
-	return d:Dot(d)
+	local dx, dy, dz = a.X - b.X, a.Y - b.Y, a.Z - b.Z
+	return dx * dx + dy * dy + dz * dz -- a*a is faster than a^2 by ~3% btw
 end
 --[[
 	Returns a median of all numbers in a table
