@@ -1,3 +1,4 @@
+--!strict
 --[[
     Memoization
 ]]
@@ -5,7 +6,10 @@ local module = {}
 local memo = {}
 memo.__index = memo
 
-export type memo = typeof(module.new())
+export type memo<K, V> = {
+	fn: (K) -> V,
+	cache: { [K]: V },
+}
 
 function module.new<K, V>(fn: (K) -> V)
 	local self = setmetatable({}, memo)
@@ -14,7 +18,7 @@ function module.new<K, V>(fn: (K) -> V)
 	return self
 end
 
-function memo.Do<K>(self: memo, Key: K)
+function memo.Do<K, V>(self: memo<K, V>, Key: K)
 	local cached = self.cache[Key]
 	if cached ~= nil then
 		return cached
@@ -24,11 +28,11 @@ function memo.Do<K>(self: memo, Key: K)
 	return result
 end
 
-function memo.Release<K>(self: memo, Key: K)
+function memo.Release<K, V>(self: memo<K, V>, Key: K)
 	self.cache[Key] = nil
 end
 
-function memo.Clear(self: memo)
+function memo.Clear<K, V>(self: memo<K, V>)
 	table.clear(self.cache)
 end
 
