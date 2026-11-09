@@ -17,10 +17,11 @@ if RunService:IsClient() then
 end
 local Janitor = require(script.Parent.Packages.Janitor)
 local Promise = require(script.Parent.Packages.Promise)
+local jMath = require(script.Parent.jMath)
 
 type Recursive<T> = T | { Recursive<T> }
 type dict<K, V> = { [K]: V }
-type tbl<T> = { [number]: T }
+type tbl<T> = dict<number, T>
 type Types = { string }
 
 -- Object:IsA() but supports a table of types
@@ -668,6 +669,40 @@ end
 ]]
 function Util.Chars(n: number | string)
 	return typeof(n) == "number" and #string.format("%.0f", math.abs(n)) or #n
+end
+
+--[[
+	Returns the closest index and it's distance^2 to a point
+]]
+function Util.Closest<K>(Positions: dict<K, Vector3>, Point: Vector3): (K, number)
+	local bestIndex, bestDistSq = nil, math.huge
+	for i, p in Positions do
+		local d = jMath.MagSqr(p, Point)
+		if d >= bestDistSq then
+			continue
+		end
+		bestDistSq = d
+		bestIndex = i
+	end
+
+	return bestIndex, bestDistSq
+end
+
+--[[
+	Returns the closest index and it's distance^2 to a point
+]]
+function Util.Closest2d<K>(Positions: dict<K, Vector2>, Point: Vector2): (K, number)
+	local bestIndex, bestDistSq = nil, math.huge
+	for i, p in Positions do
+		local d = jMath.MagSqr2d(p, Point)
+		if d >= bestDistSq then
+			continue
+		end
+		bestDistSq = d
+		bestIndex = i
+	end
+
+	return bestIndex, bestDistSq
 end
 
 return Util
