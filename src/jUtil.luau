@@ -1,3 +1,5 @@
+--!native
+--!strict
 local Util = {}
 local ContentProvider = game:GetService("ContentProvider")
 local RunService = game:GetService("RunService")
@@ -34,28 +36,28 @@ function Util.IsA(Obj: Object, Types: Types)
 	return false
 end
 
-function Util.GetChildrenWhichAre(Inst: Instance, Types: Types)
+function Util.GetChildrenWhichAre(Inst: Instance, Types: Types): { Instance }
 	if #Types == 0 then
 		return {}
 	end
 	return Inst:QueryDescendants("> " .. table.concat(Types, ", > "))
 end
 
-function Util.GetDescendantsWhichAre(Inst: Instance, Types: Types)
+function Util.GetDescendantsWhichAre(Inst: Instance, Types: Types): { Instance }
 	if #Types == 0 then
 		return {}
 	end
 	return Inst:QueryDescendants(table.concat(Types, ", "))
 end
 
-function Util.GetChildrenExcept(Inst: Instance, Types: Types)
+function Util.GetChildrenExcept(Inst: Instance, Types: Types): { Instance }
 	if #Types == 0 then
 		return Inst:GetChildren()
 	end
 	return Inst:QueryDescendants("> :not(" .. table.concat(Types, "):not(") .. ")")
 end
 
-function Util.GetDescendantsExcept(Inst: Instance, Types: Types)
+function Util.GetDescendantsExcept(Inst: Instance, Types: Types): { Instance }
 	if #Types == 0 then
 		return Inst:GetDescendants()
 	end
@@ -121,7 +123,7 @@ end
 function Util.RandFromDict<K, V>(dict: dict<K, V>): V
 	local dc = Util.DictCount(dict)
 	if dc == 0 then
-		return
+		return nil :: V
 	end
 	local n = math.random(1, dc)
 	local i = 0
@@ -298,8 +300,10 @@ local function pattern(unit: string): string
 end
 local function largestUnit(format: string): number
 	for _, unit in UNITS do
-		if format:find(pattern(unit[1])) then
-			return unit[2]
+		local char = unit[1] :: string
+		local size = unit[2] :: number
+		if format:find(pattern(char)) then
+			return size
 		end
 	end
 	return math.huge
@@ -329,10 +333,11 @@ function Util.FormatTime(Sec: number, ...: string): string
 		end
 	end
 	for _, unit in UNITS do
-		local size = unit[2]
+		local char = unit[1] :: string
+		local size = unit[2] :: number
 		local value = Sec // size
 		local count
-		Format, count = Format:gsub(pattern(unit[1]), function(token)
+		Format, count = Format:gsub(pattern(char), function(token)
 			return if #token == 2 then string.format("%02d", value) else tostring(value)
 		end)
 		if count > 0 then
@@ -342,11 +347,12 @@ function Util.FormatTime(Sec: number, ...: string): string
 	return Format
 end
 
+-- not direct assignment because we need the big fat deprecated sign
 --[[
 	@deprecated alias of .IsDictEmpty()
 ]]
 function Util.IsTableEmpty<K, V>(dict: dict<K, V>): boolean
-	Util.IsDictEmpty(dict) -- not direct assignment because we need the big fat deprecated sign
+	return Util.IsDictEmpty(dict)
 end
 
 --[[
@@ -365,7 +371,7 @@ end
 ]]
 function Util.deepClone<T>(dict: T): T
 	if typeof(dict) ~= "table" then
-		return dict
+		return dict :: T
 	end
 	local clone = {}
 	for k, v: any in dict :: any do
@@ -378,7 +384,7 @@ end
 	Randomizes indecies of a table
 	Probably not entirely random
 ]]
-function Util.ShuffleTable<T>(tbl: tbl<T>): tbl<T>
+function Util.ShuffleTable<T>(tbl: tbl<T>)
 	local r = Random.new()
 	for i = #tbl, 2, -1 do
 		local j = r:NextInteger(1, i)
@@ -429,7 +435,9 @@ end
 ]]
 function Util.ChangeControls(state: boolean)
 	local LocalPlayer = Players.LocalPlayer
-	local Controls = require(LocalPlayer.PlayerScripts.PlayerModule):GetControls()
+	local PlayerScripts = LocalPlayer:WaitForChild("PlayerScripts")
+	local PlayerModule = PlayerScripts:WaitForChild("PlayerModule") :: ModuleScript
+	local Controls = (require :: (ModuleScript) -> any)(PlayerModule):GetControls() -- hacky workaround alert
 	if state then
 		Controls:Enable()
 	else
@@ -497,15 +505,20 @@ function Util.TweenPivotTo(PV: PVInstance, info: TweenInfo, targetcf: CFrame): (
 	j:Add(tw.Completed:Once(function()
 		j:Destroy()
 	end))
+	return j, tw
 end
 
 --[[
 	workspace:BulkMoveTo, but accounts for pivot
 ]]
-function Util.BulkPivotTo(models: { PVInstance }, CFrames: { CFrame }, mode: Enum.BulkMoveMode)
+function Util.BulkPivotTo(models: { Model }, CFrames: { CFrame }, mode: Enum.BulkMoveMode)
 	local newCFrames = {}
 	local newModels = {}
 	for i, v in models do
+		if not v.PrimaryPart then
+			warn(`BulkPivotTo tried moving model {v} which does not have a PrimaryPart!`)
+			continue
+		end
 		local pivotOffset = v:GetPivot():Inverse() * v.PrimaryPart.CFrame
 		table.insert(newModels, v.PrimaryPart)
 		table.insert(newCFrames, CFrames[i] * pivotOffset)
@@ -514,13 +527,13 @@ function Util.BulkPivotTo(models: { PVInstance }, CFrames: { CFrame }, mode: Enu
 end
 
 --[[
-	@return Whether the instance has a specific property available
+	@return Whether the instance has a specific property available and it's value if it exists
 ]]
-function Util.HasProperty(Obj: Instance, Property: string): boolean
-	local has = pcall(function()
-		local _ = Obj[Property]
+function Util.HasProperty(Obj: Instance, Property: string): (boolean, any?)
+	local has, val = pcall(function()
+		return (Obj :: any)[Property]
 	end)
-	return has
+	return has, (has and val or nil)
 end
 
 --[[
@@ -528,20 +541,26 @@ end
 	Format: (PlayerData, "Inventory/Weapons/Weapon1")
 	Will return nil if path is invalid
 ]]
-function Util.ResolvePath(root: Instance | dict<any, any>, path: string, sep: string?): any?
+function Util.ResolvePath(root: Instance | dict<any, any>, path: string, sep: string?): any
+	local current: any = root
 
-	local segments = string.split(path, sep or "/")
-	local current: Instance | dict<any, any> = root
-
-	for _, segment in segments do
+	for _, segment in string.split(path, sep or "/") do
 		if type(current) == "table" then
 			current = current[segment]
-		elseif type(current) == "userdata" and current:IsA("Instance") then
-			current = current:FindFirstChild(segment) or current[segment]
+		elseif typeof(current) == "Instance" then
+			local inst = current :: Instance
+			local child = inst:FindFirstChild(segment)
+			if child then
+				current = child
+			else
+				local has, val = Util.HasProperty(inst, segment)
+				current = if has then val else nil
+			end
 		else
 			return nil
 		end
 	end
+
 	return current
 end
 
@@ -562,7 +581,7 @@ end
 --[[
 	Weld a to b, parent weld to a and return the weld
 ]]
-function Util.Weld(a: Instance, b: Instance): WeldConstraint
+function Util.Weld(a: BasePart, b: BasePart): WeldConstraint
 	local Weld = Instance.new("WeldConstraint")
 	Weld.Part0 = a
 	Weld.Part1 = b
@@ -575,7 +594,7 @@ end
 	i.e.
 	for s, e in Ranges("1:2 2:3 3:4") do -> (1, 2), (2, 3), (3, 4)
 ]]
-function Util.Ranges(str: string): (number?, number?)
+function Util.Ranges(str: string): () -> (number?, number?)
 	local iterator = string.gmatch(str, "(%d+):(%d+)")
 
 	return function()
@@ -583,7 +602,7 @@ function Util.Ranges(str: string): (number?, number?)
 		if startStr and endStr then
 			return tonumber(startStr), tonumber(endStr)
 		end
-		return nil
+		return nil, nil
 	end
 end
 
@@ -595,7 +614,7 @@ end
 	Returns PlayerGui of local player
 ]]
 function Util.GetLocalPlayerGui(): PlayerGui
-	return Players.LocalPlayer.PlayerGui
+	return Players.LocalPlayer:WaitForChild("PlayerGui") :: PlayerGui
 end
 
 --[[
@@ -667,10 +686,12 @@ end
 --[[
 	Returns the count of characters in a num/str
 ]]
-function Util.Chars(n: number | string)
-	return typeof(n) == "number" and #string.format("%.0f", math.abs(n)) or #n
+function Util.Chars(n: number | string): number
+	if typeof(n) == "number" then
+		return #string.format("%.0f", math.abs(n))
+	end
+	return #n
 end
-
 --[[
 	Returns the closest index and it's distance^2 to a point
 ]]
@@ -685,7 +706,7 @@ function Util.Closest<K>(Positions: dict<K, Vector3>, Point: Vector3): (K, numbe
 		bestIndex = i
 	end
 
-	return bestIndex, bestDistSq
+	return bestIndex :: K, bestDistSq
 end
 
 --[[
@@ -702,7 +723,7 @@ function Util.Closest2d<K>(Positions: dict<K, Vector2>, Point: Vector2): (K, num
 		bestIndex = i
 	end
 
-	return bestIndex, bestDistSq
+	return bestIndex :: K, bestDistSq
 end
 
 return Util
