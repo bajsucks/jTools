@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Easy management of sounds, music playlists
 ]]
@@ -16,6 +17,19 @@ local folder = workspace:FindFirstChild("jSounds") -- This folder will be used f
 local Janitor = require(script.Parent.Packages.Janitor)
 local Pool = require(script.Parent.Pool)
 local jUtil = require(script.Parent.jUtil)
+
+export type Playlist = typeof(setmetatable(
+	{} :: {
+		ShouldShuffle: boolean,
+		SoundGroup: SoundGroup?,
+		CurrentIndex: number,
+		IsPlaying: boolean,
+		IsPaused: boolean,
+		_Janitor: Janitor.Janitor,
+		List: { Sound },
+	},
+	Playlist
+))
 
 local Sound3D = Instance.new("Attachment")
 do
@@ -59,7 +73,7 @@ end
 ]]
 function jSound.GlobalSFX(Sound: Sound, SoundGroup: SoundGroup?)
 	local p = SoundGroup or SoundService
-	local s: Sound = Pool2D:Get(p)
+	local s = Pool2D:Get(p)
 	s.SoundGroup = SoundGroup
 	Equal(s, Sound)
 	s:Play()
@@ -88,18 +102,22 @@ function jSound.LocalSFX(Where: Vector3 | CFrame | PVInstance, Sound: Sound, Sou
 	local s: Sound
 	if typeof(Where) == "Instance" then
 		local attach = Sound3D:Clone()
-		s = attach.s
-		s.Ended:Once(function()
-			attach:Destroy()
-		end)
+		s = attach:FindFirstChild("s") :: Sound
+		if s then
+			s.Ended:Once(function()
+				attach:Destroy()
+			end)
+		end
 		attach.Parent = Where
 	else
 		local attach = Pool3D:Get(folder)
 		attach.WorldPosition = pos
-		s = attach.s
-		s.Ended:Once(function()
-			Pool3D:Return(attach)
-		end)
+		s = attach:FindFirstChild("s") :: Sound
+		if s then
+			s.Ended:Once(function()
+				Pool3D:Return(attach)
+			end)
+		end
 	end
 	Equal(s, Sound)
 	s.SoundGroup = SoundGroup
@@ -112,7 +130,7 @@ end
 	@param Shuffle Whether or not the playlist should play songs in a random order
 	@param SoundGroup Sound group that the playlist should use
 ]]
-function jSound.NewPlaylist(List: { Sound }, Shuffle: boolean?, SoundGroup: SoundGroup?)
+function jSound.NewPlaylist(List: { Sound }, Shuffle: boolean?, SoundGroup: SoundGroup?): Playlist
 	if #List < 1 then
 		error("Playlists cannot have 0 items!", 2)
 	end
@@ -260,9 +278,6 @@ function Playlist.Destroy(self: Playlist)
 	for _, v in self.List do
 		v:Destroy()
 	end
-	self = nil
 end
-
-export type Playlist = typeof(jSound.NewPlaylist())
 
 return jSound
