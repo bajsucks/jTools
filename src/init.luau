@@ -24,7 +24,6 @@ local jTools: typeof({
 	jMath = require(script.jMath),
 	jSound = require(script.jSound),
 	jUtil = require(script.jUtil),
-	PerSecond = require(script.PerSecond),
 	Pool = require(script.Pool),
 	RangeEngine = require(script.RangeEngine),
 	SAT = require(script.SAT),
