@@ -5,36 +5,36 @@
 local Pool = {}
 Pool.__index = Pool
 
-export type Pool = typeof(setmetatable(
+export type Pool<T> = typeof(setmetatable(
 	{} :: {
-		template: Instance,
-		pool: { Instance },
+		template: T,
+		pool: { T },
 	},
 	Pool
 ))
 
-function Pool.new(template: Instance, Count: number?): Pool
+function Pool.new<T>(template: T, Count: number?): Pool<T>
 	local self = setmetatable({
 		template = template,
-		pool = {} :: { Instance },
+		pool = {} :: { T },
 	}, Pool)
 	for _ = 1, Count or 0 do
-		table.insert(self.pool, template:Clone())
+		table.insert(self.pool, (template :: Instance):Clone())
 	end
 	return self
 end
 
-function Pool.Get(self: Pool, Parent: Instance?): Instance
-	local Obj: Instance = table.remove(self.pool) or self.template:Clone()
+function Pool.Get<T>(self: Pool<T>, Parent: Instance?): T
+	local Obj: Instance = table.remove(self.pool) or (self.template :: Instance):Clone()
 	if Parent then
 		Obj.Parent = Parent
 	end
-	return Obj
+	return Obj :: T
 end
 
-function Pool.Return(self: Pool, obj: Instance)
-	obj.Parent = nil
-	table.insert(self.pool, obj)
+function Pool.Return<T>(self: Pool<T>, Obj: T)
+	(Obj :: Instance).Parent = nil
+	table.insert(self.pool, Obj)
 end
 
 return Pool
