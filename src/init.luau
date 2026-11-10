@@ -19,7 +19,6 @@
 local jTools: typeof({
 	Badges = require(script.Badges),
 	Cashier = require(script.Cashier),
-	Crumbs = require(script.Crumbs),
 	Haptic = require(script.Haptic),
 	jMath = require(script.jMath),
 	jSound = require(script.jSound),
