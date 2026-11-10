@@ -1,3 +1,4 @@
+--!strict
 --[[
 	Haptic is EXPERIMENTAL.
 	has NOT yet been tested.
