@@ -1,3 +1,4 @@
+--!strict
 --[[
     This module provides social functions that are not a part of the default Roblox API.
     Examples of such include: IsPlayerFollowing(Player, userid), GetFollowerCount(Player)
@@ -11,7 +12,7 @@ local Players = game:GetService("Players")
 ]]
 function module.IsPlayerFollowing(FollowerUserId: number, FollowedUserId: number, cursor: string): boolean
 	if RunService:IsClient() then
-		return
+		return false
 	end
 	local HttpService = game:GetService("HttpService")
 	if cursor == nil then
@@ -29,7 +30,7 @@ function module.IsPlayerFollowing(FollowerUserId: number, FollowedUserId: number
 	})
 
 	if response.Success then
-		local Body = HttpService:JSONDecode(response.Body)
+		local Body = HttpService:JSONDecode(response.Body :: string)
 		local nextPageCursor = Body.nextPageCursor
 
 		for _, v in pairs(Body.data) do
@@ -39,7 +40,7 @@ function module.IsPlayerFollowing(FollowerUserId: number, FollowedUserId: number
 		end
 
 		if nextPageCursor ~= nil then
-			module.PlayerisFollowing(FollowerUserId, FollowedUserId, nextPageCursor)
+			module.IsPlayerFollowing(FollowerUserId, FollowedUserId, nextPageCursor)
 		end
 	end
 	return false
@@ -47,9 +48,9 @@ end
 --[[
     Beware of the API limit!
 ]]
-function module.GetFollowerCount(UserId: number): number
+function module.GetFollowerCount(UserId: number): number?
 	if RunService:IsClient() then
-		return
+		return nil
 	end
 	local HttpService = game:GetService("HttpService")
 
@@ -59,9 +60,9 @@ function module.GetFollowerCount(UserId: number): number
 		Method = "GET",
 	})
 	if not response.Success then
-		return
+		return nil
 	end
-	local TableBody = HttpService:JSONDecode(response.Body)
+	local TableBody = HttpService:JSONDecode(response.Body :: string)
 	return TableBody.count
 end
 
