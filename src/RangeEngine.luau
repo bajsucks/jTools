@@ -1,3 +1,4 @@
+--!strict
 --!native
 --!optimize 2
 --[[
@@ -48,21 +49,21 @@ function SpatialHash.new(cellSize: number, maxEntities: number): SpatialHash
 		maxEntities = maxEntities,
 		hashCapacity = hashCapacity,
 		queryStamp = 0,
-		hashStamps = table.create(hashCapacity, 0) :: { number },
-		cellHeads = table.create(hashCapacity) :: { number? },
-		nextEntity = table.create(maxEntities) :: { number? },
-		entityX = table.create(maxEntities, 0) :: { number },
-		entityZ = table.create(maxEntities, 0) :: { number },
+		hashStamps = table.create(hashCapacity, 0),
+		cellHeads = table.create(hashCapacity),
+		nextEntity = table.create(maxEntities),
+		entityX = table.create(maxEntities, 0),
+		entityZ = table.create(maxEntities, 0),
 	}, SpatialHash) :: any
 end
 
-function SpatialHash:clear()
+function SpatialHash.clear(self: SpatialHash)
 	table.clear(self.cellHeads)
 end
 
-function SpatialHash:insert(entity: number, x: number, z: number)
-	local invCellSize: number = self.invCellSize
-	local hashCapacity: number = self.hashCapacity
+function SpatialHash.insert(self: SpatialHash, entity: number, x: number, z: number)
+	local invCellSize = self.invCellSize
+	local hashCapacity = self.hashCapacity
 	local cx = math.floor(x * invCellSize)
 	local cz = math.floor(z * invCellSize)
 
@@ -74,7 +75,8 @@ function SpatialHash:insert(entity: number, x: number, z: number)
 	self.cellHeads[hash] = entity
 end
 
-function SpatialHash:queryRadius(
+function SpatialHash.queryRadius(
+	self: SpatialHash,
 	x: number,
 	z: number,
 	radius: number,
@@ -91,7 +93,7 @@ function SpatialHash:queryRadius(
 
 	local hitCount = if accumulate then #outBuffer else 0
 	local radSqr = radius * radius
-	local invCellSize: number = self.invCellSize
+	local invCellSize = self.invCellSize
 
 	local minCx = math.floor((x - radius) * invCellSize)
 	local maxCx = math.floor((x + radius) * invCellSize)
@@ -104,9 +106,9 @@ function SpatialHash:queryRadius(
 	local hStamps = self.hashStamps
 	local heads = self.cellHeads
 	local nextE = self.nextEntity
-	local eX: { number } = self.entityX
-	local eZ: { number } = self.entityZ
-	local hashCapacity: number = self.hashCapacity
+	local eX = self.entityX
+	local eZ = self.entityZ
+	local hashCapacity = self.hashCapacity
 	local bitMask = hashCapacity - 1
 
 	for cx = minCx, maxCx do
