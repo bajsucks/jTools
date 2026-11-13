@@ -536,32 +536,79 @@ function Util.HasProperty(Obj: Instance, Property: string): (boolean, any?)
 	return has, (has and val or nil)
 end
 
---[[
-	Get an object from a table/instance using a path
-	Format: (PlayerData, "Inventory/Weapons/Weapon1")
-	Will return nil if path is invalid
-]]
-function Util.ResolvePath(root: Instance | dict<any, any>, path: string, sep: string?): any
-	local current: any = root
-
-	for _, segment in string.split(path, sep or "/") do
-		if type(current) == "table" then
-			current = current[segment]
-		elseif typeof(current) == "Instance" then
-			local inst = current :: Instance
-			local child = inst:FindFirstChild(segment)
-			if child then
-				current = child
-			else
-				local has, val = Util.HasProperty(inst, segment)
-				current = if has then val else nil
-			end
-		else
-			return nil
+do -- https://tenor.com/view/red-paper-coach-meme-gif-11221063440541197155
+	-- selene: allow(undefined_variable)
+	type function ResolvePathT(root, path, sep)
+		if not path:is("singleton") then
+			return types.any
 		end
+
+		local s = "/"
+		if sep:is("singleton") then
+			local v = sep:value() :: any
+			if type(v) ~= "string" then
+				return types.any
+			end
+			if v ~= "" then -- "" only appears bc hack
+				s = v
+			end
+		elseif not (sep:is("nil") or sep:is("unknown") or sep:is("never")) then
+			return types.any
+		end
+
+		local p = path:value() :: any
+		if type(p) ~= "string" or p == "" then
+			return types.any
+		end
+
+		local current = root
+		for _, segment in string.split(p, s) do
+			if not current:is("table") then
+				return types.any
+			end
+			local nextType = current:readproperty(types.singleton(segment))
+			if nextType == nil then
+				return types.any
+			end
+			current = nextType
+		end
+
+		return current
 	end
 
-	return current
+	local function resolvePath(root: Instance | dict<any, any>, path: string, sep: string?): any
+		local current: any = root
+
+		for _, segment in string.split(path, sep or "/") do
+			if type(current) == "table" then
+				current = current[segment]
+			elseif typeof(current) == "Instance" then
+				local inst = current :: Instance
+				local child = inst:FindFirstChild(segment)
+				if child then
+					current = child
+				else
+					local has, val = Util.HasProperty(inst, segment)
+					current = if has then val else nil
+				end
+			else
+				return nil
+			end
+		end
+
+		return current
+	end
+	-- without `| ""` solver widens singletons to `string`
+	type ResolvePathFn = <R, P, S>(root: R, path: P | "", sep: (S | "")?) -> ResolvePathT<R, P, S>
+
+	--[[
+		Get an object from a table/instance using a path
+		
+		Format: (PlayerData, "Inventory/Weapons/Weapon1"), (PlayerData, "Inventory.Weapons.Weapon1", ".")
+
+		Will return nil if path is invalid
+	]]
+	Util.ResolvePath = (resolvePath :: any) :: ResolvePathFn
 end
 
 --[[
