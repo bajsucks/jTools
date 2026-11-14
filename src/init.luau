@@ -32,6 +32,8 @@ local jTools: typeof({
 	Memo = require(script.Memo),
 	ServerList = require(script.ServerList),
 	Juice = require(script.Juice),
+	RichWrap = require(script.RichWrap),
+	InlineIcon = require(script.InlineIcon),
 }) =
 	{}
 
